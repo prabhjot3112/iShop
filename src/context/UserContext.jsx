@@ -15,7 +15,7 @@ export const UserProvider = ({ children }) => {
       if (!token) return;
 
       try {
-        const { data } = await axios.get(`${ userType == 'buyer' ? `${BASE_URL}/buyer/get}` : `${BASE_URL}/vendor/get`}`, {
+        const { data } = await axios.get( `${userType === 'buyer' ? `${BASE_URL}/buyer/get` : `${BASE_URL}/vendor/get`}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         console.log('data of user:',data)
