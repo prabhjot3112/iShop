@@ -28,8 +28,9 @@ const Contact = () => {
               <div className="mt-4 space-y-2 text-gray-800">
                 <p><strong>📍 Address:</strong> B wing, CF Building,
 MIHAN SEZ, Nagpur, MH, 441108</p>
-                <p><strong>📞 Phone:</strong> (123) 456-7890</p>
-                <p><strong>✉️ Email:</strong> hr@pragmatyc.com</p>
+                <p><strong>📞 Phone:</strong> (+91) 9876543210</p>
+                <p><strong>✉️ Email:</strong> contact@ishop31.com</p>
+      
               </div>
             </div>
 

@@ -13,6 +13,10 @@ import AddProducts from './pages/vendor/AddProducts';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/buyer/Cart';
 import StripeProvider from './StripeProvider';
+import RefundPolicy from './pages/RefundPolicy';
+import ShippingPolicy from './pages/ShippingPolicy';
+import TermsAndConditions from './pages/TermsAndConditions';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 export default function App() {
   return (
@@ -31,6 +35,11 @@ export default function App() {
         <Route path='/contact' element={<Contact />}/>
         <Route path='/product/:id' element={<ProductDetails />}/>
         <Route path='/checkout' element={<StripeProvider></StripeProvider>}/>
+
+           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
       </Routes>
     </Router>
   );
