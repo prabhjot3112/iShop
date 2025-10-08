@@ -12,11 +12,13 @@ import BuyerHome from './pages/buyer/BuyerHome';
 import AddProducts from './pages/vendor/AddProducts';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/buyer/Cart';
-import StripeProvider from './StripeProvider';
 import RefundPolicy from './pages/RefundPolicy';
 import ShippingPolicy from './pages/ShippingPolicy';
 import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import OrderSuccess from './pages/OrderSuccess';
+import Orders from './pages/buyer/Orders';
+import AddedProducts from './pages/vendor/AddedProducts';
 
 export default function App() {
   return (
@@ -28,13 +30,16 @@ export default function App() {
         <Route path="/vendor/login" element={<VendorLogin />} />
         <Route path='/vendor/home' element={<VendorHome />}/>
         <Route path='/vendor/add-product' element={<AddProducts />}/>
+        <Route path='/vendor/products' element={<AddedProducts />}/>
+
         <Route path='/buyer/home' element={<BuyerHome />}/>
         <Route path="/buyer/register" element={<BuyerRegister />} />
         <Route path="/buyer/login" element={<BuyerLogin />} />
         <Route path="/buyer/cart" element={<Cart />} />
+        <Route path="/buyer/order-success/:id" element={<OrderSuccess />} />
+<Route path='/buyer/orders' element={<Orders />}/>
         <Route path='/contact' element={<Contact />}/>
         <Route path='/product/:id' element={<ProductDetails />}/>
-        <Route path='/checkout' element={<StripeProvider></StripeProvider>}/>
 
            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />

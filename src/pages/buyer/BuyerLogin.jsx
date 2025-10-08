@@ -3,6 +3,7 @@ import axios from 'axios'
 import {Link, useNavigate} from 'react-router-dom'
 import 'react-toastify/dist/ReactToastify.css';
 import { toast, ToastContainer } from 'react-toastify';
+import { useUser } from '../../context/UserContext';
 const BASE_URL = import.meta.env.VITE_API_URL
 
 const BuyerLogin = () => {
@@ -31,6 +32,8 @@ const BuyerLogin = () => {
     }));
   };
   const navigate = useNavigate();
+      const {user , setUser} = useUser();
+
   const handleSubmit = async(e) => {
 
     e.preventDefault();
@@ -42,6 +45,7 @@ const BuyerLogin = () => {
         toast.success(data.message)
         localStorage.setItem('token',data.token)
         localStorage.setItem('userType','buyer')
+        setUser(data.user)
         setFormData({
             email:'',
             password:'',        })

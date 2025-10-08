@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '../../components/Header';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
-import { FaCross, FaTimes } from 'react-icons/fa';
+import { FaCross, FaTimes, FaUpload } from 'react-icons/fa';
 const BASE_URL = import.meta.env.VITE_API_URL
 
 const AddProducts = () => {
@@ -95,9 +95,14 @@ const handleSubmit = async (e) => {
               required
               className="hidden"
             />
-            <label htmlFor='file-upload' className='cursor-pointer border  w-full py-3 px-2  mt-5 border-dashed border-blue-500 rounded hover:bg-gray-100 transition'>
-             Click to upload image 
-            </label>
+        {!imagePreview &&   <label
+  htmlFor="file-upload"
+  className="cursor-pointer w-32 h-32 flex items-center justify-center mt-5 border-2 border-dashed border-blue-500 rounded-full hover:bg-gray-100 transition"
+>
+    <FaUpload className="text-xl text-blue-500 mr-2" />
+  Upload
+</label>}
+
 
             {imagePreview && (
               <div className="mt-4">

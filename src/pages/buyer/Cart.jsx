@@ -5,6 +5,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { FaTrash } from 'react-icons/fa';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link, useNavigate } from 'react-router-dom';
+import PaymentButton from '../../components/PaymentButton';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -65,6 +66,8 @@ const Cart = () => {
         <div>
             <ToastContainer />
             <Header />
+            <div className='px-4'>
+
             {
                 isCartItemLoading ?
                     <div className="flex justify-center mt-10">
@@ -119,10 +122,10 @@ const Cart = () => {
                                             </p>
                                             <p className="text-md">
                                                 Price:{' '}
-                                                <span className="font-medium">${product.price.toFixed(2)}</span>
+                                                <span className="font-medium">₹{product.price.toFixed(2)}</span>
                                             </p>
                                             <p className="text-md mt-1 font-semibold">
-                                                Total: ${(product.price * quantity).toFixed(2)}
+                                                Total: ₹{(product.price * quantity).toFixed(2)}
                                             </p>
                                         </div>
                                     </div>
@@ -139,17 +142,18 @@ const Cart = () => {
                                 <div className=" flex justify-end">
                                     <div className="text-right">
                                         <h4 className="text-lg font-semibold">To Pay:</h4>
-                                        <p className="text-xl font-bold text-green-600">${totalToPay.toFixed(2)}</p>
+                                        <p className="text-xl font-bold text-green-600">₹{totalToPay.toFixed(2)}</p>
                                     </div>
                                 </div>
-                                <button className='bg-blue-700 text-white w-full rounded-lg px-4 py-3 hover:bg-blue-900'>Proceed to Pay</button>
-                            </div>
+                              <PaymentButton totalAmount={totalToPay.toFixed(2)}/>   </div>
 
                      )}
+
 </div>
 
                      </div>
             }
+            </div>
         </div>
     );
 };
