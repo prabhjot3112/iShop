@@ -36,7 +36,9 @@ const OrderSuccess = () => {
       <Header />
 
       {loading ? (
-        <div className="text-center mt-12">Loading order details...</div>
+        <div className="text-center mt-12 w-full justify-center flex ">
+          <div className="border-2 animate-spin border-b-transparent border-t-transparent border-blue-600 w-14 h-14 rounded-full "></div>
+        </div>
       ) : !order ? (
         <div className="text-center mt-12 text-red-500">
           Could not load order. Please check your order history.

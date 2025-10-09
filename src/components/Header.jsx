@@ -2,7 +2,10 @@ import React, { useState } from 'react'
 import { FaTimes, FaUser, FaUserCircle } from 'react-icons/fa'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
-
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import PushNotificationToggle from './PushNotificationToggle';
+const VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 const Header = () => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -19,13 +22,48 @@ const Header = () => {
     setIsOpen(false)
   }
     const {user , setUser} = useUser();
+const [permission, setPermission] = useState(Notification.permission);
 
-  const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('userType')
-    setUser(null)
-    navigate('/')
+  const logout = async () => {
+    // alert('ok')
+  try {
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+
+      if (subscription) {
+        await subscription.unsubscribe();
+
+        const token = localStorage.getItem('token');
+        const userType = localStorage.getItem('userType');
+
+        await fetch(`${import.meta.env.VITE_API_URL}/notifications/unsubscribe/${userType === 'buyer' ? 'buyer' : 'vendor'}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        });
+// toast.success('Notifications disabled!!!')
+      }
+    }
+  } catch (error) {
+    console.error("Error during push unsubscribe:", error);
+    // Optionally alert user: alert("Something went wrong while disabling notifications.");
+    toast.error(error.response.data.error)
   }
+
+  setPermission('default');
+  localStorage.removeItem('token');
+  localStorage.removeItem('userType');
+  setUser(null);
+  navigate('/');
+};
+
+
+  
+
 
   // Common nav links
   const navLinks = [
@@ -143,6 +181,9 @@ const Header = () => {
           >
             Your Orders
           </button>}
+          {
+            isLoggedIn && <PushNotificationToggle />
+          }
           <button
             className="w-full text-left text-red-600 hover:underline"
             onClick={() => {
@@ -192,6 +233,9 @@ const Header = () => {
         >
           Your Orders
         </button>}
+        {
+            isLoggedIn && <PushNotificationToggle />
+        }
         <button
           className="block w-full text-left text-red-600 hover:underline"
           onClick={() => {
