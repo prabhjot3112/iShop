@@ -59,9 +59,9 @@ const PaymentButton = ({ totalAmount , setIsVerifyingPayment}) => {
 
             if (data.success) {
               toast.success("Payment Verified!");
-              // setTimeout(() => {
-              //   window.location.href = `/buyer/order-success/${data.order.id}`;
-              // }, 1500);
+              setTimeout(() => {
+                window.location.href = `/buyer/order-success/${data.order.id}`;
+              }, 1500);
             } else {
               toast.error("Payment verification failed.");
               setIsLoading(false);

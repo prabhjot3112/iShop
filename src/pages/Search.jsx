@@ -146,7 +146,7 @@ const renderPagination = () => {
         />
         <button
           onClick={startSearch}
-          className="bg-black text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition"
+          className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-800 transition"
         >
           Search
         </button>
@@ -175,7 +175,13 @@ const renderPagination = () => {
                 alt={product.name}
                 className="w-full h-48 object-contain mb-3"
                 />
-              <h3 className="text-center text-lg font-semibold">{product.name}</h3>
+                <div className='flex  flex-col '>
+              <h3 className="text-center text-lg font-semibold">{product.name.length > 25 ? product.name.substring(0,25) + '...' : product.name}</h3>
+              <div className='flex  gap-3 flex-wrap'>
+              <h4 className=  'mt-3 text-left text-gray-500 font-bold'>Price: ₹{product.price}</h4>
+              <h4 className=  'mt-3 text-left text-blue-600 font-bold'>{product.category}</h4>
+              </div>
+                </div>
             </Link>
           ))}
       
