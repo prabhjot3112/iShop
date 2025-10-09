@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import { FaCross, FaTimes, FaUpload } from 'react-icons/fa';
+import { useNavigate, useParams } from 'react-router-dom';
 const BASE_URL = import.meta.env.VITE_API_URL
 
-const AddProducts = () => {
+const EditProduct = () => {
+    const {id} = useParams()
+    const [originalFormData, setOriginalFormData] = useState(null);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -14,30 +18,79 @@ const AddProducts = () => {
     category: '',
     image: null,
   });
+const token = localStorage.getItem('token')
+  useEffect(() => {
+    ;(async()=>{
+      try {
+        const {data} = await axios.get(`${BASE_URL}/products/product/${id}`,{
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        })
+        setFormData(data.product)
+        setOriginalFormData(data.product)
+        setImagePreview(data.product.image)
+      } catch (error) {
+        toast.error(error.response.data.error)
+      }finally{
+        setIsPageLoading(false)
+      }
+
+    })()
+  
+    return () => {
+      
+    }
+  }, [])
+  const [isPageLoading, setIsPageLoading] = useState(true)
+  
+  const isFormChanged = (newData, originalData) => {
+  if (!originalData) return false;
+
+  for (const key in newData) {
+    if (key === 'image') continue; // We'll compare image separately
+    if (String(newData[key]).trim() !== String(originalData[key]).trim()) {
+      return true;
+    }
+  }
+
+  // Compare image only if new file is uploaded
+  if (newData.image && typeof newData.image === 'object') {
+    return true;
+  }
+
+  return false;
+};
+
 
   const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
+const [hasChanges, setHasChanges] = useState(false)
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+  const { name, value, files } = e.target;
 
-    if (name === 'image') {
-      const file = files[0];
-      console.log('file is:',file)
-      if (file) {
-        setFormData((prev) => ({
-          ...prev,
-          image: file,
-        }));
-        setImagePreview(URL.createObjectURL(file));
-      }
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
+  if (name === 'image') {
+    const file = files[0];
+    if (file) {
+      const updatedForm = {
+        ...formData,
+        image: file,
+      };
+      setFormData(updatedForm);
+      setImagePreview(URL.createObjectURL(file));
+      setHasChanges(isFormChanged(updatedForm, originalFormData));
     }
-  };
+  } else {
+    const updatedForm = {
+      ...formData,
+      [name]: value,
+    };
+    setFormData(updatedForm);
+    setHasChanges(isFormChanged(updatedForm, originalFormData));
+  }
+};
+
+  const navigate = useNavigate()
 const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -51,12 +104,12 @@ const handleSubmit = async (e) => {
       data.append('category', formData.category);
       data.append('image', formData.image);
         const token = localStorage.getItem('token')
-      const data1 = await axios.post(`${BASE_URL}/products/add` , data, {
+      const data1 = await axios.put(`${BASE_URL}/products/update/${id}` , data, {
        headers:{
         Authorization:`Bearer ${token}`
        }     
       })
-      toast.success('Product Added Successfully')
+      toast.success('Product Updated Successfully')
       setFormData({
           name: '',
     description: '',
@@ -65,7 +118,10 @@ const handleSubmit = async (e) => {
     category: '',
     image: null,
       })
+      setHasChanges(false);
+setOriginalFormData(null); // Reset baseline after update
       setImagePreview(null)
+      navigate('/vendor/products')
     } catch (error) {
       console.error('Error:', error);
       toast.error(`Error occured: ${error.response.data.error} `)
@@ -79,9 +135,11 @@ const handleSubmit = async (e) => {
     <div>
       <Header />
       <ToastContainer />
-
+{isPageLoading ? <div className='mt-10 flex justify-center items-center '>
+  <div className='w-14 h-14 rounded-full border border-t-transparent border-b-blue-600 animate-spin'></div>
+</div> :
       <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Add New Product</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Edit Product</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -93,7 +151,6 @@ const handleSubmit = async (e) => {
               id='file-upload'
               accept="image/*"
               onChange={handleChange}
-              required
               className="hidden"
             />
         {!imagePreview &&   <label
@@ -109,6 +166,7 @@ const handleSubmit = async (e) => {
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">Image Preview:</p>
                 <FaTimes className='text-red-500 mb-2 text-lg cursor-pointer' onClick={() => {
+setHasChanges(isFormChanged({ ...formData, image: null }, originalFormData));
                   setImagePreview(null)
                 }} />
                 <img
@@ -125,7 +183,7 @@ const handleSubmit = async (e) => {
             <input
               name="name"
               type="text"
-              value={formData.name}
+              defaultValue={formData.name}
               onChange={handleChange}
               required
               className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
@@ -137,7 +195,7 @@ const handleSubmit = async (e) => {
             <label className="block text-gray-700">Description</label>
             <textarea
               name="description"
-              value={formData.description}
+              defaultValue={formData.description}
               onChange={handleChange}
               required
               className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
@@ -151,7 +209,7 @@ const handleSubmit = async (e) => {
             <input
               name="price"
               type="number"
-              value={formData.price}
+              defaultValue={formData.price}
               onChange={handleChange}
               required
               className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
@@ -163,7 +221,7 @@ const handleSubmit = async (e) => {
             <input
               name="stock"
               type="number"
-              value={formData.stock}
+              defaultValue={formData.stock}
               onChange={handleChange}
               required
               className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
@@ -176,7 +234,7 @@ const handleSubmit = async (e) => {
             <input
               name="category"
               type="text"
-              value={formData.category}
+              defaultValue={formData.category}
               onChange={handleChange}
               required
               className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
@@ -186,21 +244,23 @@ const handleSubmit = async (e) => {
 
 
           {/* Submit button */}
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition flex items-center justify-center"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              'Add Product'
-            )}
-          </button>
+         <button
+  type="submit"
+  className="w-full bg-blue-600 text-white py-2 cursor-pointer rounded-md hover:bg-blue-700 transition flex items-center justify-center disabled:opacity-50"
+  disabled={isLoading || !hasChanges}
+>
+  {isLoading ? (
+    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+  ) : (
+    'Submit'
+  )}
+</button>
+
         </form>
       </div>
+}
     </div>
   );
 };
 
-export default AddProducts;
+export default EditProduct;

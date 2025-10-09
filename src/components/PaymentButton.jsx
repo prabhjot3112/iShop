@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 const BASE_URL = import.meta.env.VITE_API_URL;
 const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
-const PaymentButton = ({ totalAmount }) => {
+const PaymentButton = ({ totalAmount , setIsVerifyingPayment}) => {
   const [isLoading, setIsLoading] = useState(false); // loading state
 
   const handlePayment = async () => {
@@ -41,6 +41,7 @@ const PaymentButton = ({ totalAmount }) => {
 
 
           try {
+            setIsVerifyingPayment(true)
             const { data } = await axios.post(
               `${BASE_URL}/payment/verify-payment`,
               {
@@ -58,9 +59,9 @@ const PaymentButton = ({ totalAmount }) => {
 
             if (data.success) {
               toast.success("Payment Verified!");
-              setTimeout(() => {
-                window.location.href = `/buyer/order-success/${data.order.id}`;
-              }, 1500);
+              // setTimeout(() => {
+              //   window.location.href = `/buyer/order-success/${data.order.id}`;
+              // }, 1500);
             } else {
               toast.error("Payment verification failed.");
               setIsLoading(false);
@@ -69,6 +70,8 @@ const PaymentButton = ({ totalAmount }) => {
             console.error("Verification failed:", error);
             toast.error("Verification failed. Try again.");
             setIsLoading(false);
+          }finally{
+            // setIsVerifyingPayment(false)
           }
         },
         modal: {

@@ -19,6 +19,9 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import OrderSuccess from './pages/OrderSuccess';
 import Orders from './pages/buyer/Orders';
 import AddedProducts from './pages/vendor/AddedProducts';
+import EditProduct from './pages/vendor/EditProduct';
+import VendorOrders from './pages/vendor/VendorOrders';
+import SalesChart from './pages/vendor/SalesChart';
 
 export default function App() {
   return (
@@ -31,6 +34,9 @@ export default function App() {
         <Route path='/vendor/home' element={<VendorHome />}/>
         <Route path='/vendor/add-product' element={<AddProducts />}/>
         <Route path='/vendor/products' element={<AddedProducts />}/>
+        <Route path='/vendor/orders' element={<VendorOrders />}/>
+      <Route path='/vendor/product/edit/:id' element={<EditProduct />}/>
+      <Route path='/vendor/sales' element={<SalesChart />}/>
 
         <Route path='/buyer/home' element={<BuyerHome />}/>
         <Route path="/buyer/register" element={<BuyerRegister />} />

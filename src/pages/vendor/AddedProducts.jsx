@@ -2,32 +2,71 @@ import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { FaPencilAlt, FaTimes, FaTrash } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 const AddedProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true); // 🔹 Track loading state
+  const {user} = useUser()
 
+  const [isDeleteOpen, setIsDeleteOpen] = useState({isTrue:false , id:null})
+    
+  const token = localStorage.getItem('token');
+  const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false)
+  const deleteProduct = async(id) => {
+    try {
+      setIsDeleteProductLoading(true)
+      const {data} = await axios.delete(`${BASE_URL}/products/product/delete/${id}` , {
+        headers:{
+          Authorization:`Bearer ${token}`
+        }
+      })
+      console.log('data is:',data)
+    if (data?.message === 'Success') {
+  const updatedProducts = products.filter(product => product.id !== parseInt(id));
+  console.log('updatedProducts:',updatedProducts)
+  setProducts(updatedProducts);
+  setIsDeleteOpen({isTrue:false , id:null})
+  toast.success('Product Deleted Successfully');
+}
+
+
+    } catch (error) {
+      setIsDeleteOpen({isTrue:false , id:null})
+      toast.error(error.response.data.error) 
+    }finally{
+      setIsDeleteProductLoading(false)
+    }
+  }
+
+  const navigate = useNavigate()
   useEffect(() => {
-    (async () => {
-      const token = localStorage.getItem('token');
+    const fetchVendorProducts = async () => {
+      if (!token) {
+        navigate('/vendor/login');
+        return;
+      }
+
       try {
-        const { data } = await axios.get(`${BASE_URL}/products/vendor/1`, {
+        const { data } = await axios.get(`${BASE_URL}/products/vendor`, {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         setProducts(data.products);
       } catch (error) {
         toast.error(error.response?.data?.error || 'Failed to fetch products');
       } finally {
-        setLoading(false); // 🔹 Mark loading as done
+        setLoading(false);
       }
-    })();
-  }, []);
+    };
+
+    fetchVendorProducts();
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,7 +79,7 @@ const AddedProducts = () => {
         {loading ? (
           <div className=" animate-spin w-14 h-14 mx-auto rounded-full border-t-transparent border-r-blue-600 border-2 border-b-blue-600"></div> // 🔹 Show loading
         ) : products.length === 0 ? (
-          <p className="text-gray-500 text-lg">You haven’t added any products yet.</p> // 🔹 Show "no products" only after loading
+          <p className="text-gray-500 text-lg">You haven’t added any products yet.</p> 
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {products.map((product) => (
@@ -58,15 +97,40 @@ const AddedProducts = () => {
                     {product.description}
                   </p>
                   <div className="mt-4 flex justify-between items-center text-sm">
-                    <span className="text-blue-600 font-medium">${product.price}</span>
+                    <span className="text-blue-600 font-medium">₹{product.price}</span>
                     <span className={product.stock > 0 ? "text-green-600" : "text-red-500"}>
                       {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
                     </span>
                   </div>
                   <div className='mt-4 flex gap-3 flex-wrap justify-start'>
-                    <Link to={`/edit/${product.id}`} className='py-1 flex justify-center items-center gap-2 px-4 rounded-lg hover:bg-blue-600 hover:text-white border border-blue-600'><FaPencilAlt /> Edit</Link>
-                    <Link className='py-1 flex justify-center items-center gap-2 px-4 rounded-lg border-red-600 hover:text-white border hover:bg-red-600'><FaTrash /> Delete</Link>
+                    <Link to={`/vendor/product/edit/${product.id}`} className='py-1 flex justify-center items-center gap-2 px-4 rounded-lg hover:bg-blue-600 hover:text-white border border-blue-600'><FaPencilAlt /> Edit</Link>
+                    <button onClick={() => setIsDeleteOpen({isTrue:true , id:product.id})} className='py-1 flex justify-center items-center gap-2 px-4 rounded-lg border-red-600 hover:text-white border hover:bg-red-600'><FaTrash /> Delete</button>
                   </div>
+                  {isDeleteOpen.isTrue && isDeleteOpen.id == product.id  && <div className='mt-3 p-3 flex flex-col border border-black rounded'>
+                    <FaTimes className='mb-2 self-end text-lg cursor-pointer' onClick={() => setIsDeleteOpen({isTrue:false , id:null})}/>
+                      <p>Are you sure you want to delete this product?</p>
+                      <div className='flex justify-start flex-wrap gap-3 mt-2'>
+  <button
+    className='py-1 px-3 bg-red-500 hover:bg-red-600 rounded-lg text-white flex items-center justify-center min-w-[60px]'
+    onClick={()=> !isDeleteProductLoading && deleteProduct(product.id)}
+    disabled={isDeleteProductLoading}
+  >
+    {isDeleteProductLoading ? (
+      <div  className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+    ) : (
+      'Yes'
+    )}
+  </button>
+
+  <button
+    onClick={() => setIsDeleteOpen({ isTrue: false, id: null })}
+    className='py-1 px-3 bg-green-500 hover:bg-green-600 rounded-lg text-white'
+  >
+    No
+  </button>
+</div>
+
+                  </div>}
                 </div>
               </div>
             ))}

@@ -4,11 +4,10 @@ import { Link } from 'react-router-dom';
 
 const VendorHome = () => {
   const menuItems = [
-    { title: 'Dashboard', link: '/vendor/dashboard' },
+    { title: 'Sales', link: '/vendor/sales' },
     { title: 'Add Product', link: '/vendor/add-product' },
     { title: 'My Products', link: '/vendor/products' },
     { title: 'Orders', link: '/vendor/orders' },
-    { title: 'Settings', link: '/vendor/settings' },
   ];
 
   return (

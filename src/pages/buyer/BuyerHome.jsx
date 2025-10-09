@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import Header from '../../components/Header'
-import { Link } from 'react-router-dom'
+import { Link  , useNavigate} from 'react-router-dom'
 import axios from 'axios'
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const BuyerHome = () => {
     const [data, setData] = useState([])
     const [isLoading, setIsLoading] = useState(true)
+    const navigate = useNavigate()
   // Run an initial search (optional)
   useEffect(() => {
+    if(localStorage.getItem('userType') == 'vendor') navigate('/vendor/home')
     const fetchInitial = async () => {
       try {
         const { data } = await axios.get(`${apiUrl}/products/random`);
@@ -42,7 +44,7 @@ const BuyerHome = () => {
         {
             isLoading  ? <div className='animate-spin border-2 rounded-full w-14 h-14 mx-auto mt-10 border-l-red-600 border-r-yellow-500 border-t-blue-700 border-b-green-600'></div> : 
             
-                 <div className="grid mt-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                 <div className="grid p-3 mt-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {data.map((product, id) => (
             <Link
             to={`/product/${product.id}`}

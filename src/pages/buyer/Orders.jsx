@@ -49,8 +49,13 @@ const Orders = () => {
               <div key={order.id} className="bg-white rounded shadow p-6">
                 <div className="mb-4 border-b pb-2">
                   <p><span className="font-medium">Order ID:</span> #{order.id}</p>
-                  <p><span className="font-medium">Status:</span> {order.status}</p>
-                  <p><span className="font-medium">Total:</span> ₹{order.totalAmount.toFixed(2)}</p>
+                <p>
+  <span className="font-medium">Status: </span> 
+  <span className={order.status === 'pending' ? 'text-orange-600' : 'text-green-600'}>
+    {order.status}
+  </span>
+</p>
+   <p><span className="font-medium">Total:</span> ₹{order.totalAmount.toFixed(2)}</p>
                   <p><span className="font-medium">Date:</span> {new Date(order.createdAt).toLocaleString()}</p>
                 </div>
 
