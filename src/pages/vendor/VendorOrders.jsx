@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import Header from '../../components/Header'
 import axios from 'axios'
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
+import OrderStatusSelector from '../../components/OrderStatusSelector';
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 
@@ -32,10 +33,47 @@ const VendorOrders = () => {
       
     }
   }, [])
+
+  const [isUpdateStatusLoading, setIsUpdateStatusLoading] = useState({isTrue:false,id:null})
+  const [orderStatus, setOrderStatus] = useState('pending')
+  const updateStatus = async (id, newStatus) => {
+  const token = localStorage.getItem("token");
+
+  try {
+    setIsUpdateStatusLoading({ isTrue: true, id });
+    const { data } = await axios.put(
+      `${BASE_URL}/orders/order/update/item/status`,
+      {
+        orderItemId: id,
+        status: newStatus,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    toast.success(data.message);
+
+    // ✅ Update status locally in orderItems
+    setOrderItems((prevItems) =>
+      prevItems.map((item) =>
+        item.id === id ? { ...item, status: newStatus } : item
+      )
+    );
+  } catch (error) {
+    toast.error(error.response?.data?.error || "Something went wrong");
+  } finally {
+    setIsUpdateStatusLoading({ isTrue: false, id: null });
+  }
+};
+
   
   return (
     <div>
       <Header />
+      <ToastContainer />
      {  isLoading ? <div className='w-full flex justify-center mt-7'>
       <div className='w-14 h-14 border-2 rounded-full border-t-transparent border-blue-700 animate-spin'></div>
      </div> : <div>
@@ -69,8 +107,17 @@ const VendorOrders = () => {
 <p className='text-center'>Ordered by: <span className='font-bold'>
    {orderItem.order.buyer.name}
   </span>
+ 
    </p>
               </div>
+ <OrderStatusSelector
+  currentStatus={orderItem.status}
+  orderItem={orderItem}
+  isUpdateStatusLoading={isUpdateStatusLoading}
+  onUpdate={updateStatus}
+/>
+
+
               <div></div>
             </div>
           ))

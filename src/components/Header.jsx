@@ -5,6 +5,7 @@ import { useUser } from '../context/UserContext'
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import PushNotificationToggle from './PushNotificationToggle';
+import { useRef } from 'react';
 const VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 const Header = () => {
   const location = useLocation()
@@ -61,6 +62,9 @@ const [permission, setPermission] = useState(Notification.permission);
   navigate('/');
 };
 
+
+
+const hasChecked = useRef(false);
 
   
 
@@ -119,6 +123,11 @@ const [permission, setPermission] = useState(Notification.permission);
   ]
 
   const [showOrders, setShowOrders] = useState(false);
+
+  
+  
+  
+  
 
   return (
     <header className="w-full bg-white shadow-md sticky top-0 z-50">
@@ -179,11 +188,15 @@ const [permission, setPermission] = useState(Notification.permission);
               setShowOrders(false);
             }}
           >
-            Your Orders
+            My Orders
           </button>}
-          {
-            isLoggedIn && <PushNotificationToggle />
-          }
+         <PushNotificationToggle
+  userType={userType}
+  isLoggedIn={isLoggedIn}
+  hasChecked={hasChecked}
+  style={{ display: showOrders ? 'block' : 'none' }} // or conditionally render content inside
+/>
+
           <button
             className="w-full text-left text-red-600 hover:underline"
             onClick={() => {
@@ -233,9 +246,13 @@ const [permission, setPermission] = useState(Notification.permission);
         >
           Your Orders
         </button>}
-        {
-            isLoggedIn && <PushNotificationToggle />
-        }
+       <PushNotificationToggle
+  userType={userType}
+  hasChecked={hasChecked}
+  isLoggedIn={isLoggedIn}
+  style={{ display:  showOrders ? 'block' : 'none' }} // or conditionally render content inside
+/>
+
         <button
           className="block w-full text-left text-red-600 hover:underline"
           onClick={() => {

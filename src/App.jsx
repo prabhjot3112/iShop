@@ -22,6 +22,7 @@ import AddedProducts from './pages/vendor/AddedProducts';
 import EditProduct from './pages/vendor/EditProduct';
 import VendorOrders from './pages/vendor/VendorOrders';
 import SalesChart from './pages/vendor/SalesChart';
+import TrackOrder from './pages/buyer/TrackOrder';
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/buyer/register" element={<BuyerRegister />} />
         <Route path="/buyer/login" element={<BuyerLogin />} />
         <Route path="/buyer/cart" element={<Cart />} />
+        <Route path="/buyer/order/track/:id" element={<TrackOrder />} />
         <Route path="/buyer/order-success/:id" element={<OrderSuccess />} />
 <Route path='/buyer/orders' element={<Orders />}/>
         <Route path='/contact' element={<Contact />}/>

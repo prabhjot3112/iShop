@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { useMemo } from "react";
 
 const UserContext = createContext();
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -29,8 +30,10 @@ export const UserProvider = ({ children }) => {
     fetchUser();
   }, []);
 
+  const value = useMemo(() => ({ user, setUser }), [user, setUser]);
+
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={value}>
       {children}
     </UserContext.Provider>
   );

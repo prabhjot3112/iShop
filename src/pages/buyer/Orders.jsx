@@ -3,6 +3,7 @@ import Header from '../../components/Header';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -40,7 +41,9 @@ const Orders = () => {
         <h1 className="text-3xl font-semibold mb-6 text-gray-800">🧾 My Orders</h1>
 
         {loading ? (
-          <div className="text-center text-gray-600 mt-20">Loading your orders...</div>
+          <div className="mt-10 w-full flex justify-start">
+            <div className='w-14 h-14 rounded-full border-2 border-t-transparent border-blue-700 animate-spin'></div>
+          </div>
         ) : orders.length === 0 ? (
           <div className="text-center text-gray-600 mt-20">You haven't placed any orders yet.</div>
         ) : (
@@ -77,7 +80,10 @@ const Orders = () => {
                           <p className="font-medium text-gray-800">{item.product.name}</p>
                           <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                           <p className="text-sm text-gray-600">Price: ₹{item.price.toFixed(2)}</p>
+                          <p className="text-sm text-gray-600">Status: {item.status}</p>
+                          <Link to={`/buyer/order/track/${item.id}`} className='mt-5 text-blue-700 font-black'>Track Order</Link>
                         </div>
+                        
                       </div>
                     ))}
                   </div>

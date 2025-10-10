@@ -92,6 +92,8 @@ const PaymentButton = ({ totalAmount , setIsVerifyingPayment}) => {
     }
   };
 
+  
+
   return (
     <button
       onClick={handlePayment}
