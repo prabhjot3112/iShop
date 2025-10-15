@@ -54,8 +54,14 @@ const VendorRegister = () => {
             navigate('/vendor/login')
         }, 2500);
     } catch (error) {   
-        console.log('error occured',error)
-        toast.error(`Error occured: ${error.response.data.error} `)
+      const errors = error.response?.data?.errors;
+if(errors){
+if (Array.isArray(errors)) {
+  errors.forEach(err => toast.error(err.msg));
+} 
+}else{
+  toast.error(error.response.data.error)
+}
     }finally{
     setIsLoading(false)
     }

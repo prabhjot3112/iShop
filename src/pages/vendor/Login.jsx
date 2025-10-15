@@ -51,9 +51,19 @@ const VendorLogin = () => {
         setTimeout(() => {
             navigate('/vendor/home')
         }, 2500);
-    } catch (error) {   
-        console.log('error occured',error)
-        toast.error(`Error occured: ${error.response.data.error} `)
+    } catch (error) {
+      if(error.response.data.errors)
+      {
+      const errors = error.response?.data?.errors;
+      
+      if (Array.isArray(errors)) {
+      errors.forEach(err => toast.error(err.msg));
+      }
+    } else if(error.response.data.error) {
+      toast.error(error.response.data.error)
+    } else{
+      toast.error('An unexpected error occurred');
+    }
     }finally{
     setIsLoading(false)
     }

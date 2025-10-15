@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
 import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import { FaCross, FaTimes, FaUpload } from 'react-icons/fa';
+import CategorySelect from '../../components/CategorySelect';
 const BASE_URL = import.meta.env.VITE_API_URL
 
 const AddProducts = () => {
@@ -13,7 +14,40 @@ const AddProducts = () => {
     stock: '',
     category: '',
     image: null,
+    isUserDefinedCategory:false
   });
+  const [isPageLoading, setIsPageLoading] = useState(true);
+const [fetchedCategory, setFetchedCategory] = useState([])
+
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setIsPageLoading(true)
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${BASE_URL}/product/categories`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const categories = response.data.categories;
+        console.log('res is: ',response.data[0].name)
+        setFetchedCategory(response.data)
+        // Process categories if needed
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }finally{
+        setIsPageLoading(false)
+      }
+    };
+      fetchCategories();
+   
+  
+    return () => {
+      
+    }
+  }, [])
+  
 
   const [imagePreview, setImagePreview] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,8 +74,13 @@ const AddProducts = () => {
   };
 const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.image) {
+    toast.error("Please select a product image.");
+    return;
+  }
     setIsLoading(true);
 
+console.log('user defined:' , formData.isUserDefinedCategory)
     try {
       const data = new FormData();
       data.append('name', formData.name);
@@ -50,6 +89,7 @@ const handleSubmit = async (e) => {
       data.append('stock', formData.stock);
       data.append('category', formData.category);
       data.append('image', formData.image);
+      data.append('isUserDefinedCategory', formData.isUserDefinedCategory);
         const token = localStorage.getItem('token')
       const data1 = await axios.post(`${BASE_URL}/products/add` , data, {
        headers:{
@@ -66,11 +106,16 @@ const handleSubmit = async (e) => {
     image: null,
       })
       setImagePreview(null)
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error(`Error occured: ${error.response.data.error} `)
-     
-    } finally {
+    } catch (error) {   
+          const errors = error.response?.data?.errors;
+    if(errors){
+    if (Array.isArray(errors)) {
+      errors.forEach(err => toast.error(err.msg));
+    } 
+    }else{
+      toast.error(error.response.data.error)
+    }
+        }finally {
       setIsLoading(false);
     }
   };
@@ -80,7 +125,9 @@ const handleSubmit = async (e) => {
       <Header />
       <ToastContainer />
 
-      <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
+    { isPageLoading ? <div className='w-full flex justify-center mt-10'>
+      <div className='w-14 h-14 rounded-full animate-spin border border-t-transparent border-blue-700'></div>
+    </div> :   <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Add New Product</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -93,7 +140,7 @@ const handleSubmit = async (e) => {
               id='file-upload'
               accept="image/*"
               onChange={handleChange}
-              required
+              
               className="hidden"
             />
         {!imagePreview &&   <label
@@ -172,16 +219,8 @@ const handleSubmit = async (e) => {
           </div>
 
           <div>
-            <label className="block text-gray-700">Category</label>
-            <input
-              name="category"
-              type="text"
-              value={formData.category}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g. Electronics"
-            />
+            <label className="block text-gray-700 mb-2">Category</label>
+            <CategorySelect formData={formData} setFormData={setFormData}  fetchedCategory={fetchedCategory}/>
           </div>
 
 
@@ -198,7 +237,7 @@ const handleSubmit = async (e) => {
             )}
           </button>
         </form>
-      </div>
+      </div>}
     </div>
   );
 };

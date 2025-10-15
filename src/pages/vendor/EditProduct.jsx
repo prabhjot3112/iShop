@@ -5,11 +5,88 @@ import axios from 'axios';
 import { FaCross, FaTimes, FaUpload } from 'react-icons/fa';
 import { useNavigate, useParams } from 'react-router-dom';
 const BASE_URL = import.meta.env.VITE_API_URL
+import CreatableSelect from 'react-select/creatable';
+
+
+
+
+
+function CategorySelect({
+  fetchedCategory = [],
+  formData,
+  setFormData,
+  setHasChanges,
+  isFormChanged,
+  originalFormData,
+}) {
+  const [options, setOptions] = useState(fetchedCategory.map((cat) => ({
+    value: cat.name,
+    label: cat.name,
+  })));
+  console.log('fetchedCategory in edit is:',fetchedCategory)
+
+  // Handle existing category change
+  const handleChange = (selectedOption) => {
+    const newCategory = selectedOption ? selectedOption.value : '';
+    const newFormData = {
+      ...formData,
+      category: newCategory,
+      isUserDefinedCategory: false,
+    };
+
+    setFormData(newFormData);
+    if (setHasChanges && isFormChanged && originalFormData) {
+      setHasChanges(isFormChanged(newFormData, originalFormData));
+    }
+  };
+
+  // Handle custom category creation
+  const handleCreate = (inputValue) => {
+    const newOption = { value: inputValue, label: inputValue };
+
+    setOptions((prev) => {
+      const exists = prev.find((opt) => opt.value === inputValue);
+      return exists ? prev : [...prev, newOption];
+    });
+
+    const newFormData = {
+      ...formData,
+      category: inputValue,
+      isUserDefinedCategory: true,
+    };
+
+    setFormData(newFormData);
+    if (setHasChanges && isFormChanged && originalFormData) {
+      setHasChanges(isFormChanged(newFormData, originalFormData));
+    }
+  };
+
+  // Preselect the current value
+  const selectedOption = options.find(
+    (opt) => opt.value === formData.category
+  ) || null;
+
+  return (
+    <CreatableSelect
+      isClearable
+      value={selectedOption}
+      onChange={handleChange}
+      onCreateOption={handleCreate}
+      options={options}
+      placeholder="Select or create category"
+    />
+  );
+}
+
+
+
+
+
+
 
 const EditProduct = () => {
     const {id} = useParams()
     const [originalFormData, setOriginalFormData] = useState(null);
-
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -19,19 +96,32 @@ const EditProduct = () => {
     image: null,
   });
 const token = localStorage.getItem('token')
+const [fetchedCategory, setFetchedCategory] = useState([])
   useEffect(() => {
     ;(async()=>{
       try {
+        setIsPageLoading(true)
         const {data} = await axios.get(`${BASE_URL}/products/product/${id}`,{
           headers:{
             Authorization:`Bearer ${token}`
           }
         })
+        const response = await axios.get(`${BASE_URL}/product/categories`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        console.log('res is: ',response.data)
+        setFetchedCategory(response.data)
+        console.log('data is edit:',data)
         setFormData(data.product)
         setOriginalFormData(data.product)
         setImagePreview(data.product.image)
       } catch (error) {
-        toast.error(error.response.data.error)
+        console.log('ok:',error)
+        if(error.message == 'Network Error'){
+          toast.error(error.message)
+        }else toast.error(error.response.data.error)
       }finally{
         setIsPageLoading(false)
       }
@@ -72,23 +162,24 @@ const [hasChanges, setHasChanges] = useState(false)
   if (name === 'image') {
     const file = files[0];
     if (file) {
-      const updatedForm = {
+      const newFormData = {
         ...formData,
         image: file,
       };
-      setFormData(updatedForm);
+      setFormData(newFormData);
       setImagePreview(URL.createObjectURL(file));
-      setHasChanges(isFormChanged(updatedForm, originalFormData));
+      setHasChanges(isFormChanged(newFormData, originalFormData));
     }
   } else {
-    const updatedForm = {
+    const newFormData = {
       ...formData,
       [name]: value,
     };
-    setFormData(updatedForm);
-    setHasChanges(isFormChanged(updatedForm, originalFormData));
+    setFormData(newFormData);
+    setHasChanges(isFormChanged(newFormData, originalFormData));
   }
 };
+
 
   const navigate = useNavigate()
 const handleSubmit = async (e) => {
@@ -128,6 +219,7 @@ setOriginalFormData(null); // Reset baseline after update
      
     } finally {
       setIsLoading(false);
+      setIsPageLoading(false)
     }
   };
 
@@ -230,17 +322,18 @@ setHasChanges(isFormChanged({ ...formData, image: null }, originalFormData));
           </div>
 
           <div>
-            <label className="block text-gray-700">Category</label>
-            <input
-              name="category"
-              type="text"
-              defaultValue={formData.category}
-              onChange={handleChange}
-              required
-              className="w-full mt-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g. Electronics"
-            />
-          </div>
+            <label className="block mb-2 text-gray-700">Category</label>
+           <CategorySelect
+  formData={formData}
+  setFormData={setFormData}
+  setHasChanges={setHasChanges}
+  isFormChanged={isFormChanged}
+  originalFormData={originalFormData}
+  fetchedCategory={fetchedCategory}
+/>
+
+
+         </div>
 
 
           {/* Submit button */}

@@ -152,7 +152,7 @@ headers:{
         </span>
       </div>
 
-      <div className="text-2xl font-bold text-blue-700 mb-4">${product.price}</div>
+      <div className="text-2xl font-bold text-blue-700 mb-4">₹{product.price}</div>
     </div>
 
     {/* Add to Cart / Quantity Control */}
