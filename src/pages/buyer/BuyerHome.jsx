@@ -57,7 +57,7 @@ const BuyerHome = () => {
                 className="w-full h-48 object-contain mb-3"
               />
               <h3 className="text-center text-lg font-semibold">{product.name.toString().length > 25 ? product.name.substring(0,25) + '...' : product.name}</h3>
-              <p className='flex items-start'><span>$</span>
+              <p className='flex items-start'><span>₹</span>
               <span className='text-xl'>{product.price}</span>
                 </p>
             </Link>
