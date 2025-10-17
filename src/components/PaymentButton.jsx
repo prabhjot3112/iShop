@@ -24,6 +24,7 @@ const PaymentButton = ({ totalAmount , setIsVerifyingPayment}) => {
           },
         }
       );
+      console.log('data is:',data)
 
       const { razorpayOrder } = data;
 
@@ -68,10 +69,10 @@ const PaymentButton = ({ totalAmount , setIsVerifyingPayment}) => {
             }
           } catch (error) {
             console.error("Verification failed:", error);
-            toast.error("Verification failed. Try again.");
+            toast.error(`Error: ${error.response?.data?.message || error.message}`);
             setIsLoading(false);
           }finally{
-            // setIsVerifyingPayment(false)
+            setIsVerifyingPayment(false)
           }
         },
         modal: {
@@ -87,7 +88,7 @@ const PaymentButton = ({ totalAmount , setIsVerifyingPayment}) => {
       rzp.open();
     } catch (err) {
       console.error("Payment initiation failed", err);
-      toast.error("Failed to initiate payment");
+      toast.error(err.response?.data?.error || "Failed to initiate payment");
       setIsLoading(false);
     }
   };

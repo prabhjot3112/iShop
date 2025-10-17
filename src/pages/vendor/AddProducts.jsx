@@ -12,7 +12,7 @@ const AddProducts = () => {
     description: '',
     price: '',
     stock: '',
-    category: '',
+    category: [],
     image: null,
     isUserDefinedCategory:false
   });
@@ -81,6 +81,7 @@ const handleSubmit = async (e) => {
     setIsLoading(true);
 
 console.log('user defined:' , formData.isUserDefinedCategory)
+console.log('formdata:',formData)
     try {
       const data = new FormData();
       data.append('name', formData.name);

@@ -74,8 +74,14 @@ const TrackOrder = () => {
                     <div className='relative'>
                         <p className='mt-3 font-bold  text-lg '>{orderItem.product.name}</p>
                         <img src={`${orderItem.product.image}`} className='mt-2 rounded max-w-[260px]'/>
-                        <div className='absolute bottom-5 left-4 py-1 px-2 bg-blue-600 text-white rounded'>{orderItem.product.category}</div>
-                    </div>
+                        <div className='mt-2 absolute bottom-4 flex gap-2 items-start flex-wrap justify-center'>
+                          {
+                            orderItem.product.category.map((cat, index) => (
+                              <span key={index} className="bg-white  px-2 py-1 rounded  text-blue-600">{cat} {index < orderItem.product.category.length - 1 ? ',' : ''}</span>
+                            ))
+                          }
+                        </div>
+                          </div>
                 </div>
                 </Link>
               </div>

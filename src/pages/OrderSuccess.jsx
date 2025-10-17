@@ -11,6 +11,9 @@ const OrderSuccess = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if(localStorage.getItem("userType") !== "buyer"){
+      window.location.href = "/";
+    }
     const fetchOrder = async () => {
       try {
         const token = localStorage.getItem("token");

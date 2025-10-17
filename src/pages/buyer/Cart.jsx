@@ -26,6 +26,7 @@ const Cart = () => {
                     Authorization: `Bearer ${token}`,
                 },
             });
+            console.log('cart items are:',data)
             setCartItems(data.items);
         } catch (error) {
             toast.error(`Error occurred: ${error.response?.data?.error || error.message}`);
@@ -61,6 +62,7 @@ const Cart = () => {
     else navigate('/buyer/login')
     }, []);
     const totalToPay = cartItems.reduce((acc, item) => {
+      if(item.product.stock <= 0) return acc;
         return acc + item.product.price * item.quantity;
     }, 0);
 
@@ -128,12 +130,20 @@ const Cart = () => {
                       </h4>
                     </Link>
                     <p className="text-sm text-gray-600 mt-1">{product.description}</p>
-                    <p className="text-sm text-gray-500 mt-1">Category: {product.category}</p>
+                    {
+                      product.category.map((cat, index) => (
+                        <span key={index} className="text-blue-600 mr-2">{cat} {index < product.category.length - 1 ? ',' : ''}</span>
+                      ))
+                    }
                   </div>
 
                   {/* Quantity & Pricing */}
                   <div className="text-right">
-                    <p className="text-md">
+                  {product.stock > 0 ? <div>
+                     <p className="text-md">
+                      In Stock: <span className="font-medium">{product.stock}</span>
+                    </p>
+                     <p className="text-md">
                       Qty: <span className="font-medium">{quantity}</span>
                     </p>
                     <p className="text-md">
@@ -143,6 +153,7 @@ const Cart = () => {
                     <p className="text-md mt-1 font-semibold">
                       Total: ₹{(product.price * quantity).toFixed(2)}
                     </p>
+                   </div> : <p className='text-red-600'>Out of Stock</p>}
                   </div>
                 </div>
               </div>
@@ -151,7 +162,7 @@ const Cart = () => {
         </div>
 
         {/* Payment Section */}
-        {cartItems.length > 0 && (
+        {cartItems.length > 0 && totalToPay.toFixed(2) > 0 ? (
           <div className="max-w-4xl mx-auto mt-6 flex flex-col gap-4 mb-10">
             <div className="flex justify-end">
               <div className="text-right">
@@ -164,7 +175,7 @@ const Cart = () => {
               totalAmount={totalToPay.toFixed(2)}
             />
           </div>
-        )}
+        ) : <div className='mt-5 text-center text-red-600 text-lg font-black'>Item(s) Out of Stock</div>}
       </div>
     )}
   </div>

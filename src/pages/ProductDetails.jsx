@@ -28,17 +28,21 @@ const ProductDetails = () => {
             Authorization:  `Bearer ${token}`
           }
         })
-
+        console.log('data is:',data)
+        
         toast.success(data.message)
         if(increase)
+          if(product.stock > totalItemsIncart)
          setTotalItemsIncart(totalItemsIncart + 1)
+        else toast.error('No more stock available')
         else 
          setTotalItemsIncart(totalItemsIncart - 1)
         if(totalItemsIncart == 1 && !increase)
           setIncartOrNot(false)
 
     } catch (error) {
-                toast.error(`Error occured: ${error.response.data.error} `)
+
+                toast.error(`${error.response.data.message} `)
     }finally{
       setUpdateCartLoading(false)
     }
@@ -142,7 +146,11 @@ headers:{
 
       <div className="mb-2">
         <span className="font-semibold text-gray-700">Category:</span>{' '}
-        <span className="text-blue-600">{product.category}</span>
+       {
+        product.category.map((cat, index) => (
+          <span key={index} className="text-blue-600 mr-2">{cat} {index < product.category.length - 1 ? ',' : ''}</span>
+        ))
+       }
       </div>
 
       <div className="mb-2">

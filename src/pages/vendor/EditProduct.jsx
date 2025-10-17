@@ -7,10 +7,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 const BASE_URL = import.meta.env.VITE_API_URL
 import CreatableSelect from 'react-select/creatable';
 
-
-
-
-
 function CategorySelect({
   fetchedCategory = [],
   formData,
@@ -19,69 +15,78 @@ function CategorySelect({
   isFormChanged,
   originalFormData,
 }) {
-  const [options, setOptions] = useState(fetchedCategory.map((cat) => ({
-    value: cat.name,
-    label: cat.name,
-  })));
-  console.log('fetchedCategory in edit is:',fetchedCategory)
+  const [options, setOptions] = useState([]);
 
-  // Handle existing category change
-  const handleChange = (selectedOption) => {
-    const newCategory = selectedOption ? selectedOption.value : '';
+    const selectedOptions = Array.isArray(formData.category)
+    ? formData.category.map(val => ({ value: val, label: val }))
+    : [];
+    console.log('selected options:',selectedOptions)
+  useEffect(() => {
+    const initialOptions = fetchedCategory.map(cat => ({
+      value: cat.name,
+      label: cat.name,
+    }));
+
+
+    setOptions(prev => {
+      const existingValues = new Set(prev.map(opt => opt.value));
+      const merged = [...prev, ...initialOptions.filter(opt => !existingValues.has(opt.value)) , selectedOptions.map((ele)=>ele.value)];
+      return merged;
+    });
+  }, [fetchedCategory]);
+
+  const handleChange = (selectedOptions) => {
+    const selectedValues = selectedOptions ? selectedOptions.map(opt => opt.value) : [];
+
     const newFormData = {
       ...formData,
-      category: newCategory,
+      category: selectedValues,
       isUserDefinedCategory: false,
     };
 
     setFormData(newFormData);
+
     if (setHasChanges && isFormChanged && originalFormData) {
       setHasChanges(isFormChanged(newFormData, originalFormData));
     }
   };
 
-  // Handle custom category creation
   const handleCreate = (inputValue) => {
     const newOption = { value: inputValue, label: inputValue };
 
-    setOptions((prev) => {
-      const exists = prev.find((opt) => opt.value === inputValue);
-      return exists ? prev : [...prev, newOption];
-    });
+    // Add new option to options
+    setOptions(prev => [...prev, newOption]);
+
+    // Add to formData.category
+    const newCategoryList = [...(formData.category || []), inputValue];
 
     const newFormData = {
       ...formData,
-      category: inputValue,
+      category: newCategoryList,
       isUserDefinedCategory: true,
     };
 
     setFormData(newFormData);
+
     if (setHasChanges && isFormChanged && originalFormData) {
       setHasChanges(isFormChanged(newFormData, originalFormData));
     }
   };
 
-  // Preselect the current value
-  const selectedOption = options.find(
-    (opt) => opt.value === formData.category
-  ) || null;
+  
 
   return (
     <CreatableSelect
+      isMulti
       isClearable
-      value={selectedOption}
+      value={selectedOptions}
       onChange={handleChange}
       onCreateOption={handleCreate}
       options={options}
-      placeholder="Select or create category"
+      placeholder="Select or create categories"
     />
   );
 }
-
-
-
-
-
 
 
 const EditProduct = () => {
@@ -92,8 +97,9 @@ const EditProduct = () => {
     description: '',
     price: '',
     stock: '',
-    category: '',
+    category: [],
     image: null,
+    isUserDefinedCategory: false,
   });
 const token = localStorage.getItem('token')
 const [fetchedCategory, setFetchedCategory] = useState([])
@@ -119,9 +125,15 @@ const [fetchedCategory, setFetchedCategory] = useState([])
         setImagePreview(data.product.image)
       } catch (error) {
         console.log('ok:',error)
+        
         if(error.message == 'Network Error'){
           toast.error(error.message)
-        }else toast.error(error.response.data.error)
+        }else if(error.response.data.error == 'Product not found'){
+          navigate('/vendor/products')
+        }
+        else {
+          toast.error(error.response.data.error)
+        }
       }finally{
         setIsPageLoading(false)
       }
@@ -183,45 +195,52 @@ const [hasChanges, setHasChanges] = useState(false)
 
   const navigate = useNavigate()
 const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const data = new FormData();
-      data.append('name', formData.name);
-      data.append('description', formData.description);
-      data.append('price', formData.price);
-      data.append('stock', formData.stock);
-      data.append('category', formData.category);
+  try {
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('description', formData.description);
+    data.append('price', formData.price);
+    data.append('stock', formData.stock);
+
+    // 👇 Convert array to comma-separated string for backend handling
+    data.append('category', formData.category.join(','));
+
+    if (formData.image) {
       data.append('image', formData.image);
-        const token = localStorage.getItem('token')
-      const data1 = await axios.put(`${BASE_URL}/products/update/${id}` , data, {
-       headers:{
-        Authorization:`Bearer ${token}`
-       }     
-      })
-      toast.success('Product Updated Successfully')
-      setFormData({
-          name: '',
-    description: '',
-    price: '',
-    stock: '',
-    category: '',
-    image: null,
-      })
-      setHasChanges(false);
-setOriginalFormData(null); // Reset baseline after update
-      setImagePreview(null)
-      navigate('/vendor/products')
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error(`Error occured: ${error.response.data.error} `)
-     
-    } finally {
-      setIsLoading(false);
-      setIsPageLoading(false)
     }
-  };
+
+    const token = localStorage.getItem('token');
+    const response = await axios.put(`${BASE_URL}/products/update/${id}`, data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    toast.success('Product Updated Successfully');
+    setFormData({
+      name: '',
+      description: '',
+      price: '',
+      stock: '',
+      category: [],
+      image: null,
+    });
+    setHasChanges(false);
+    setOriginalFormData(null);
+    setImagePreview(null);
+    navigate('/vendor/products');
+  } catch (error) {
+    console.error('Error:', error);
+    toast.error(`Error occurred: ${error.response?.data?.error || 'Unknown error'}`);
+  } finally {
+    setIsLoading(false);
+    setIsPageLoading(false);
+  }
+};
+
 
   return (
     <div>

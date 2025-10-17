@@ -1,29 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import Header from '../components/Header';
 import { Link } from 'react-router-dom';
+import { useSearch } from '../context/SearchContext';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const Search = () => {
-  const [query, setQuery] = useState('');
   const [data, setData] = useState([]);
   const [isSearched, setIsSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1)
-const [pages, setPages] = useState([])
 
-
+const {searchData , setSearchData} = useSearch();
+console.log('searchData is:',searchData)
 const changePage = async(page) => {
-  if (!query.trim()) return; // prevent empty queries
+  if (!searchData.search.trim()) return; // prevent empty queries
 
     setIsLoading(true);
     try {
-      const { data } = await axios.get(`${apiUrl}/products/search/${query}?page=${page}`);
+      const { data } = await axios.get(`${apiUrl}/products/search/${searchData.search}?page=${page}`);
       console.log('Search result:', data);
       setData(data.products || []);
-      setPages(Array.from({ length: Number(data.totalPages) }, (_, i) => i + 1))
-      setCurrentPage(page)
+      setSearchData({...searchData, results:data.products || [] , totalPages:data.totalPages || null , currentPage:page})
+
+      const pages = Array.from({ length: Number(data.totalPages) }, (_, i) => i + 1)
+      console.log('pages are:',pages)
+
     } catch (err) {
       console.error('Search failed:', err.message);
       setData([]);
@@ -34,19 +36,19 @@ const changePage = async(page) => {
 }
 
 const renderPagination = () => {
-  const totalPages = pages.length;
+  const totalPages = searchData.totalPages  || 1;
   const maxVisiblePages = 5;
   const pageButtons = [];
 
-  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  const startPage = Math.max(1, searchData.currentPage - Math.floor(maxVisiblePages / 2));
   const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
   // Previous Button
-  if (currentPage > 1) {
+  if (searchData.currentPage > 1) {
     pageButtons.push(
       <button
         key="prev"
-        onClick={() => changePage(currentPage - 1)}
+        onClick={() => changePage(searchData.currentPage - 1)}
         className="px-3 py-2 border rounded hover:bg-blue-600 hover:text-white"
       >
         Prev
@@ -73,7 +75,7 @@ const renderPagination = () => {
         key={i}
         onClick={() => changePage(i)}
         className={`px-3 py-2 border rounded ${
-          currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-blue-600 hover:text-white'
+          searchData.currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-blue-600 hover:text-white'
         }`}
       >
         {i}
@@ -94,11 +96,11 @@ const renderPagination = () => {
   }
 
   // Next Button
-  if (currentPage < totalPages) {
+  if (searchData.currentPage < searchData.totalPages) {
     pageButtons.push(
       <button
         key="next"
-        onClick={() => changePage(currentPage + 1)}
+        onClick={() => changePage(searchData.currentPage + 1)}
         className="px-3 py-2 border rounded hover:bg-blue-600 hover:text-white"
       >
         Next
@@ -111,14 +113,14 @@ const renderPagination = () => {
 
 
   const startSearch = async () => {
-    if (!query.trim()) return; // prevent empty queries
+    if (!searchData.search.trim()) return; // prevent empty queries
 
     setIsLoading(true);
     try {
-      const { data } = await axios.get(`${apiUrl}/products/search/${query}`);
+      const { data } = await axios.get(`${apiUrl}/products/search/${searchData.search}`);
       console.log('Search result:', data);
       setData(data.products || []);
-      setPages(Array.from({ length: Number(data.totalPages) }, (_, i) => i + 1))
+      setSearchData({...searchData, results:data.products || [] , totalPages:data.totalPages, currentPage:1})
     } catch (err) {
       console.error('Search failed:', err.message);
       setData([]);
@@ -139,8 +141,10 @@ const renderPagination = () => {
       <div className="flex mt-10 justify-center gap-4 items-center">
         <input
           type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          value={searchData.search}
+          onChange={(e) => {
+            setSearchData({...searchData, search:e.target.value})
+          }}
           placeholder="Search for products..."
           className="w-full max-w-md border border-gray-400 focus:ring-purple-600 focus:ring-2 outline-none py-2 px-3 rounded-lg"
         />
@@ -160,11 +164,11 @@ const renderPagination = () => {
       )}
 
       {/* Search Results */}
-      {!isLoading && data.length > 0 && (
+      {!isLoading && searchData.results.length > 0 && (
         <div>
 
         <div className="grid mt-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {data.map((product, id) => (
+          {searchData.results.map((product, id) => (
             <Link
             to={`/product/${product.id}`}
             key={product.id}
@@ -179,7 +183,7 @@ const renderPagination = () => {
               <h3 className="text-center text-lg font-semibold">{product.name.length > 25 ? product.name.substring(0,25) + '...' : product.name}</h3>
               <div className='flex  gap-3 flex-wrap'>
               <h4 className=  'mt-3 text-left text-gray-500 font-bold'>Price: ₹{product.price}</h4>
-              <h4 className=  'mt-3 text-left text-blue-600 font-bold'>{product.category}</h4>
+              <h4 className=  'mt-3 text-left text-blue-600 font-bold'>{product.category[0]}</h4>
               </div>
                 </div>
             </Link>
@@ -187,7 +191,7 @@ const renderPagination = () => {
       
           </div>
       <div className="mt-10 flex justify-center gap-3 flex-wrap">
-  {pages &&
+  {searchData.totalPages &&
     renderPagination()}
 </div>
 
