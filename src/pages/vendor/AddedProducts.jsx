@@ -10,7 +10,7 @@ const BASE_URL = import.meta.env.VITE_API_URL;
 
 const AddedProducts = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true); // 🔹 Track loading state
+  const [loading, setLoading] = useState(true); 
   const {user} = useUser()
 
   const [isDeleteOpen, setIsDeleteOpen] = useState({isTrue:false , id:null})
@@ -58,6 +58,7 @@ const AddedProducts = () => {
           },
         });
         setProducts(data.products);
+        console.log('products are:',data.products)
       } catch (error) {
         toast.error(error.response?.data?.error || 'Failed to fetch products');
       } finally {
@@ -101,6 +102,19 @@ const AddedProducts = () => {
                     <span className={product.stock > 0 ? "text-green-600" : "text-red-500"}>
                       {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
                     </span>
+                  </div>
+                  <div>
+                    {
+                      product.category && product.category.length > 0 && (
+                        <div className='mt-2 flex flex-wrap gap-2'>
+                          {product.category.map((cat, index) => (
+                            <span key={index} className="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded-full">
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                      )
+                    }
                   </div>
                   <div className='mt-4 flex gap-3 flex-wrap justify-start'>
                     <Link to={`/vendor/product/edit/${product.id}`} className='py-1 flex justify-center items-center gap-2 px-4 rounded-lg hover:bg-blue-600 hover:text-white border border-blue-600'><FaPencilAlt /> Edit</Link>

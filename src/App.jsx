@@ -9,6 +9,7 @@ import VendorHome from './pages/vendor/VendorHome';
 import BuyerRegister from './pages/buyer/Register';
 import BuyerLogin from './pages/buyer/BuyerLogin';
 import BuyerHome from './pages/buyer/BuyerHome';
+import { EventSourcePolyfill } from 'event-source-polyfill';
 import AddProducts from './pages/vendor/AddProducts';
 import ProductDetails from './pages/ProductDetails';
 import Cart from './pages/buyer/Cart';
@@ -23,33 +24,84 @@ import EditProduct from './pages/vendor/EditProduct';
 import VendorOrders from './pages/vendor/VendorOrders';
 import SalesChart from './pages/vendor/SalesChart';
 import TrackOrder from './pages/buyer/TrackOrder';
+import { useEffect } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 
 export default function App() {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const userType = localStorage.getItem('userType'); // “vendor” or “buyer”
+    if (!userType) return;
+
+    let sseUrl = null;
+    if (userType === 'vendor') {
+      sseUrl = `${import.meta.env.VITE_API_URL}/orders/updates/vendor`;
+    } else if (userType === 'buyer') {
+      sseUrl = `${import.meta.env.VITE_API_URL}/orders/updates`;
+    } else {
+      return;
+    }
+
+    const evtSource = new EventSourcePolyfill(sseUrl, 
+      
+      {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      heartbeatTimeout:1200000
+    });
+
+    evtSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        // You might want different toast texts for vendor vs buyer
+        if (userType === 'vendor') {
+          toast.info(`New order: ${data.productName}`);
+        } 
+        // Also, you can update some global state or context if needed
+      } catch (err) {
+        console.error('Failed to parse SSE data', err);
+      }
+    };
+
+    evtSource.onerror = (err) => {
+      console.error('SSE connection error', err);
+      evtSource.close();
+    };
+
+    return () => {
+      evtSource.close();
+    };
+  }, []);
+
   return (
     <Router>
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/search" element={<Search />} />
         <Route path="/vendor/register" element={<VendorRegister />} />
         <Route path="/vendor/login" element={<VendorLogin />} />
-        <Route path='/vendor/home' element={<VendorHome />}/>
-        <Route path='/vendor/add-product' element={<AddProducts />}/>
-        <Route path='/vendor/products' element={<AddedProducts />}/>
-        <Route path='/vendor/orders' element={<VendorOrders />}/>
-      <Route path='/vendor/product/edit/:id' element={<EditProduct />}/>
-      <Route path='/vendor/sales' element={<SalesChart />}/>
+        <Route path="/vendor/home" element={<VendorHome />} />
+        <Route path="/vendor/add-product" element={<AddProducts />} />
+        <Route path="/vendor/products" element={<AddedProducts />} />
+        <Route path="/vendor/orders" element={<VendorOrders />} />
+        <Route path="/vendor/product/edit/:id" element={<EditProduct />} />
+        <Route path="/vendor/sales" element={<SalesChart />} />
 
-        <Route path='/buyer/home' element={<BuyerHome />}/>
+        <Route path="/buyer/home" element={<BuyerHome />} />
         <Route path="/buyer/register" element={<BuyerRegister />} />
         <Route path="/buyer/login" element={<BuyerLogin />} />
         <Route path="/buyer/cart" element={<Cart />} />
         <Route path="/buyer/order/track/:id" element={<TrackOrder />} />
         <Route path="/buyer/order-success/:id" element={<OrderSuccess />} />
-<Route path='/buyer/orders' element={<Orders />}/>
-        <Route path='/contact' element={<Contact />}/>
-        <Route path='/product/:id' element={<ProductDetails />}/>
+        <Route path="/buyer/orders" element={<Orders />} />
 
-           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/product/:id" element={<ProductDetails />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />
         <Route path="/terms" element={<TermsAndConditions />} />
@@ -57,3 +109,4 @@ export default function App() {
     </Router>
   );
 }
+

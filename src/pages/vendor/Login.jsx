@@ -39,7 +39,7 @@ const VendorLogin = () => {
     setIsLoading(true)
     console.log('Form Data:', formData);
     try {
-        const {data} = await axios.post(`${BASE_URL}/vendor/login`,formData)
+        const {data} =await axios.post(`${BASE_URL}/vendor/login`,formData)
         console.log('data is:',data)
         toast.success(data.message)
         localStorage.setItem('token',data.token)

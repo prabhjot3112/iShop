@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
 import axios from 'axios';
 import { Link, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -30,7 +30,6 @@ const TrackOrder = () => {
             Authorization: `Bearer ${token}`
           }
         });
-        console.log('data is:', data);
         setOrderItem(data.orderItem);
         setCurrentStatus(data.orderItem.status);
       } catch (error) {
@@ -39,6 +38,38 @@ const TrackOrder = () => {
     };
 
     trackOrder();
+  }, [id]);
+
+  useEffect(() => {
+const token = localStorage.getItem('token');
+    const evtSource = new EventSource(`${BASE_URL}/orders/updates/buyer/${token}`);
+    console.log('event source:', evtSource)
+
+    evtSource.onmessage = (event) => {
+      try {
+        // console.log('actual event:',event.toString())
+        const data = JSON.parse(event.data);
+        console.log('event data is:',data)
+        // Only update if this update matches the current order item being tracked
+        if (data.orderItemId === parseInt(id)) {
+          setCurrentStatus(data.status);
+
+          // Show toast notification
+          toast.info(data.message || `Order status updated to ${data.status}`);
+        }
+      } catch (e) {
+        console.error('Failed to parse SSE data', e);
+      }
+    };
+
+    evtSource.onerror = () => {
+      console.error('SSE connection error, closing');
+      evtSource.close();
+    };
+
+    return () => {
+      evtSource.close();
+    };
   }, [id]);
 
   const getStatusClass = (status) => {
@@ -53,6 +84,7 @@ const TrackOrder = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      <ToastContainer />
       <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-md shadow">
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Track Your Order Item</h2>
 
@@ -81,61 +113,59 @@ const TrackOrder = () => {
                             ))
                           }
                         </div>
-                          </div>
+                    </div>
                 </div>
                 </Link>
               </div>
             </div>
-{isCancelled ? (
-      <div className="text-center py-10">
-        <div className="inline-block px-4 py-2 text-red-700 bg-red-100 rounded-full font-semibold mb-4">
-          Order Cancelled
-        </div>
-        <p className="text-gray-600">This order has been cancelled and will not be processed further.</p>
-      </div>
-    ) : (
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        {STATUS_FLOW.map((status, index) => (
-            
-          <div
-            key={status}
-            className="flex-1 flex flex-col items-center relative"
-            style={{ opacity: index <= STATUS_FLOW.indexOf(currentStatus) ? 1 : 1 }}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10 ${
-                index < STATUS_FLOW.indexOf(currentStatus)
-                  ? "bg-green-500 text-white"
-                  : index === STATUS_FLOW.indexOf(currentStatus)
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-400"
-              }`}
-            >
-              {index + 1}
-            </div>
-            <span className="mt-2 text-center text-sm capitalize">
-              {status.replace(/-/g, ' ')}
-            </span>
-            {index !== STATUS_FLOW.length - 1 && (
-              <div className="hidden sm:block absolute top-4 left-1/2 w-full h-1 z-0 transform translate-x-4 sm:translate-x-0 sm:left-full sm:-translate-y-1/2 sm:w-full">
-                <div className="h-1 w-full bg-gray-300"></div>
+            {isCancelled ? (
+              <div className="text-center py-10">
+                <div className="inline-block px-4 py-2 text-red-700 bg-red-100 rounded-full font-semibold mb-4">
+                  Order Cancelled
+                </div>
+                <p className="text-gray-600">This order has been cancelled and will not be processed further.</p>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                {STATUS_FLOW.map((status, index) => (
+                  <div
+                    key={status}
+                    className="flex-1 flex flex-col items-center relative"
+                    style={{ opacity: index <= STATUS_FLOW.indexOf(currentStatus) ? 1 : 1 }}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10 ${
+                        index < STATUS_FLOW.indexOf(currentStatus)
+                          ? "bg-green-500 text-white"
+                          : index === STATUS_FLOW.indexOf(currentStatus)
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-400"
+                      }`}
+                    >
+                      {index + 1}
+                    </div>
+                    <span className="mt-2 text-center text-sm capitalize">
+                      {status.replace(/-/g, ' ')}
+                    </span>
+                    {index !== STATUS_FLOW.length - 1 && (
+                      <>
+                        <div className="hidden sm:block absolute top-4 left-1/2 w-full h-1 z-0 transform translate-x-4 sm:translate-x-0 sm:left-full sm:-translate-y-1/2 sm:w-full">
+                          <div className="h-1 w-full bg-gray-300"></div>
+                        </div>
+                        <div className="sm:hidden">
+                          <div className="h-[45px] w-1 bg-gray-300"></div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
-            {index !== STATUS_FLOW.length - 1 && (
-           <div className="sm:hidden">
-                <div className="h-[45px] w-1 bg-gray-300"></div>
-              </div>)}
-          </div>
-        ))}
-      </div>
-    )}
-           
           </>
         )}
       </div>
-      
-  </div>
-);
-}
+    </div>
+  );
+};
 
 export default TrackOrder;
