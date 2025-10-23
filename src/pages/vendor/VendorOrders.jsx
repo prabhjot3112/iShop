@@ -6,11 +6,12 @@ import OrderStatusSelector from '../../components/OrderStatusSelector';
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 
-const VendorOrders = () => {
-  const [orderItems, setOrderItems] = useState([])
+const VendorOrders = ({orderItems , setOrderItems }) => {
+  
   const [isLoading, setIsLoading] = useState(true)
   useEffect(() => {
     const fetchOrders = async() => {
+      console.log('fetching orders')
       const token = localStorage.getItem('token')
       try {
         const {data} = await axios.get(`${BASE_URL}/orders/vendor` , {
@@ -100,7 +101,15 @@ const VendorOrders = () => {
                 <img src={`${orderItem.product.image}`} 
                   className="w-full h-48 object-cover"
 />
-                <p className='absolute bottom-5 left-2 p-2 bg-blue-400 rounded'>{orderItem.product.category}</p>
+<div className='flex justify-start flex-wrap mt-2 gap-2'>
+{
+  orderItem.product.category.length > 0 && orderItem.product.category.map((cat,id) => (
+    <div key={id} className='bg-blue-600 text-white rounded py-1 px-2'>
+      {cat}
+    </div>
+  ))
+}
+  </div>
                 </div>
               </div>
                             <div className='p-3 rounded-lg shadow-lg border flex flex-col gap-2'>

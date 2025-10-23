@@ -79,7 +79,7 @@ headers:{
         setTotalItemsIncart(1)
     } catch (error) {
         console.log('error is:',error)
-                toast.error(`Error occured: ${error.response.data.error} `)
+                toast.error(`Error occured: ${error.response.data.message} `)
         
     }finally{
         setAddCartLoading(false)

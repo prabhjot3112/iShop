@@ -244,7 +244,7 @@ const hasChecked = useRef(false);
             closeMenu();
           }}
         >
-          Your Orders
+          My Orders
         </button>}
        <PushNotificationToggle
   userType={userType}

@@ -49,8 +49,10 @@ const PushNotificationToggle = ({userType , isLoggedIn , hasChecked}) => {
   }, [user?.id]);
 
   const subscribeUserToPush = async () => {
+    console.log('starting')
     setIsLoading(true);
     if (!('serviceWorker' in navigator)) {
+      console.log('not supported')
       toast.info("Push notifications are not supported in your browser.");
       return;
     }
@@ -58,18 +60,26 @@ const PushNotificationToggle = ({userType , isLoggedIn , hasChecked}) => {
     const permissionResult = await Notification.requestPermission();
 
     if (permissionResult !== 'granted') {
+      console.log('not granted')
       toast.info("You denied notification permission!")
       setPermission(permissionResult);
       return;
     }
-
+console.log('before registration')
+try{
     const registration = await navigator.serviceWorker.ready;
+console.log('after registration created')
+  try {
+  const subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
+  });
+  console.log('test');
 
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: import.meta.env.VITE_VAPID_PUBLIC_KEY,
-    });
+
+    console.log('test')
 const token = localStorage.getItem("token");
+console.log('before p256dh')
  const p256dh = btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh'))));
     const auth = btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth'))));
 
@@ -77,7 +87,7 @@ const token = localStorage.getItem("token");
 try {
   console.log('keys 1 is:',p256dh)
   console.log('keys 2: ' , auth)
-  await axios.post(`${import.meta.env.VITE_API_URL}/notifications/subscribe/${userType === 'buyer' ? 'buyer' : 'vendor'}`, {
+  const {data} = await axios.post(`${import.meta.env.VITE_API_URL}/notifications/subscribe/${userType === 'buyer' ? 'buyer' : 'vendor'}`, {
     endpoint: subscription.endpoint ,   keys: {
         p256dh,
         auth,
@@ -87,18 +97,27 @@ try {
       Authorization:`Bearer ${token}`
     }
   });
+  console.log('done with /subscribe , data is:',data)
    setPermission('granted');
     setIsSubscribed(true); // ✅ Update local state
     toast.success('Notifications enabled ✅');
 } catch (error) {
   toast.error(error.response.data.error)
+  setIsLoading(false)
   console.error('Subscription request failed:', error);
 } finally {
   setIsLoading(false);
+}   
+} catch (subscribeError) {
+  console.error('pushManager.subscribe failed:', subscribeError);
+  toast.error('Push subscription failed: ' + subscribeError.message);
+  setIsLoading(false);
+  return;
 }
-
-
-   
+}catch(e){
+  console.log('error is:',e.message)
+  setIsLoading(false)
+}
   };
 
   const handleDisable = async () => {
@@ -112,7 +131,7 @@ try {
       const token = localStorage.getItem("token");
       try{
 
-        await axios.post(`${import.meta.env.VITE_API_URL}/notifications/unsubscribe/${userType === 'buyer' ? 'buyer' : 'vendor'}`,{
+        const {data} = await axios.post(`${import.meta.env.VITE_API_URL}/notifications/unsubscribe/${userType === 'buyer' ? 'buyer' : 'vendor'}`,{
           endpoint:subscription.endpoint
         },{
           headers:{
@@ -120,6 +139,7 @@ try {
           }
         });
         
+        console.log('data in unsubscribe:',data)
         
         toast.success('Notifications disabled ❌');
       }catch(e){

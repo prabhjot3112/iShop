@@ -24,7 +24,7 @@ import EditProduct from './pages/vendor/EditProduct';
 import VendorOrders from './pages/vendor/VendorOrders';
 import SalesChart from './pages/vendor/SalesChart';
 import TrackOrder from './pages/buyer/TrackOrder';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 
 export default function App() {
@@ -35,28 +35,15 @@ export default function App() {
     const userType = localStorage.getItem('userType'); // “vendor” or “buyer”
     if (!userType) return;
 
-    let sseUrl = null;
-    if (userType === 'vendor') {
-      sseUrl = `${import.meta.env.VITE_API_URL}/orders/updates/vendor`;
-    } else if (userType === 'buyer') {
-      sseUrl = `${import.meta.env.VITE_API_URL}/orders/updates`;
-    } else {
-      return;
-    }
+    
 
-    const evtSource = new EventSourcePolyfill(sseUrl, 
-      
-      {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      heartbeatTimeout:1200000
-    });
-
+    if(userType === 'vendor'){
+      const evtSource = new EventSource(`${import.meta.env.VITE_API_URL}/orders/updates/vendor/${token}`);
+    console.log('event source:', evtSource)
     evtSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        // You might want different toast texts for vendor vs buyer
+        console.log('data is:',data)
         if (userType === 'vendor') {
           toast.info(`New order: ${data.productName}`);
         } 
@@ -65,16 +52,52 @@ export default function App() {
         console.error('Failed to parse SSE data', err);
       }
     };
-
     evtSource.onerror = (err) => {
       console.error('SSE connection error', err);
       evtSource.close();
     };
+  
+
 
     return () => {
-      evtSource.close();
+        evtSource.close();
     };
+  }
   }, []);
+
+
+
+    useEffect(() => {
+      if(localStorage.getItem('userType') == 'buyer') {
+  const token = localStorage.getItem('token');
+      const evtSource = new EventSource(`${import.meta.env.VITE_API_URL}/orders/updates/buyer/${token}`);
+      console.log('event source:', evtSource)
+  
+      evtSource.onmessage = (event) => {
+        try {
+          // console.log('actual event:',event.toString())
+          const data = JSON.parse(event.data);
+          console.log('event data is:',data)
+            // Show toast notification
+            toast.info(data.message || `Order status updated to ${data.status}`);
+          
+        } catch (e) {
+          console.error('Failed to parse SSE data', e);
+        }
+      };
+  
+      evtSource.onerror = () => {
+        console.error('SSE connection error, closing');
+        evtSource.close();
+      };
+  
+      return () => {
+        evtSource.close();
+      };
+    }
+    }, []);
+
+const [orderItems, setOrderItems] = useState([])
 
   return (
     <Router>
@@ -87,7 +110,7 @@ export default function App() {
         <Route path="/vendor/home" element={<VendorHome />} />
         <Route path="/vendor/add-product" element={<AddProducts />} />
         <Route path="/vendor/products" element={<AddedProducts />} />
-        <Route path="/vendor/orders" element={<VendorOrders />} />
+        <Route path="/vendor/orders" element={<VendorOrders orderItems={orderItems} setOrderItems={setOrderItems}   />} />
         <Route path="/vendor/product/edit/:id" element={<EditProduct />} />
         <Route path="/vendor/sales" element={<SalesChart />} />
 
