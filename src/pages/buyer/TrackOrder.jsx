@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import Header from '../../components/Header';
-import axios from 'axios';
-import { Link, useParams } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useEffect, useState } from "react";
+import Header from "../../components/Header";
+import axios from "axios";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import { FaBackspace, FaBackward } from "react-icons/fa";
+import { MdDelete } from "react-icons/md";
+import { useBuyerOrder } from "../../context/BuyerOrderContext";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -17,23 +20,25 @@ const STATUS_FLOW = [
 const TrackOrder = () => {
   const { id } = useParams();
   const [orderItem, setOrderItem] = useState(null);
-  const [currentStatus, setCurrentStatus] = useState('');
+  const [currentStatus, setCurrentStatus] = useState("");
   const isCancelled = currentStatus === "cancelled";
-
 
   useEffect(() => {
     const trackOrder = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       try {
-        const { data } = await axios.get(`${BASE_URL}/orders/order/item/track/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
+        const { data } = await axios.get(
+          `${BASE_URL}/orders/order/item/track/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
+        );
         setOrderItem(data.orderItem);
         setCurrentStatus(data.orderItem.status);
       } catch (error) {
-        toast.error(error.response?.data?.error || 'Something went wrong');
+        toast.error(error.response?.data?.error || "Something went wrong");
       }
     };
 
@@ -41,15 +46,17 @@ const TrackOrder = () => {
   }, [id]);
 
   useEffect(() => {
-const token = localStorage.getItem('token');
-    const evtSource = new EventSource(`${BASE_URL}/orders/updates/buyer/${token}`);
-    console.log('event source:', evtSource)
+    const token = localStorage.getItem("token");
+    const evtSource = new EventSource(
+      `${BASE_URL}/orders/updates/buyer/${token}`
+    );
+    console.log("event source:", evtSource);
 
     evtSource.onmessage = (event) => {
       try {
         // console.log('actual event:',event.toString())
         const data = JSON.parse(event.data);
-        console.log('event data is:',data)
+        console.log("event data is:", data);
         // Only update if this update matches the current order item being tracked
         if (data.orderItemId === parseInt(id)) {
           setCurrentStatus(data.status);
@@ -58,12 +65,12 @@ const token = localStorage.getItem('token');
           toast.info(data.message || `Order status updated to ${data.status}`);
         }
       } catch (e) {
-        console.error('Failed to parse SSE data', e);
+        console.error("Failed to parse SSE data", e);
       }
     };
 
     evtSource.onerror = () => {
-      console.error('SSE connection error, closing');
+      console.error("SSE connection error, closing");
       evtSource.close();
     };
 
@@ -80,41 +87,78 @@ const token = localStorage.getItem('token');
     if (stepIndex === currentIndex) return "bg-blue-500 text-white";
     return "bg-gray-200 text-gray-500";
   };
+  const navigate = useNavigate();
+
+  const handleBackward = () => {
+    navigate(-1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       <ToastContainer />
       <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-md shadow">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-6">Track Your Order Item</h2>
+        <button
+          className="cursor-pointer mb-4 rounded border border-black px-2 py-1 inline-flex justify-center items-center bg-blue-50"
+          onClick={handleBackward}
+        >
+          <FaBackward />
+        </button>
+
+        <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+          Track Your Order Item
+        </h2>
 
         {!orderItem ? (
-          <div className='w-full justify-center flex mt-10'>
-            <div className='w-14 h-14 rounded-full animate-spin border-2 border-t-transparent border-blue-600'></div>
-          </div> 
+          <div className="w-full justify-center flex mt-10">
+            <div className="w-14 h-14 rounded-full animate-spin border-2 border-t-transparent border-blue-600"></div>
+          </div>
         ) : (
           <>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <p><span className="font-semibold">Order ID:</span> #{orderItem.order.id}</p>
-                <p><span className="font-semibold">Product ID:</span> {orderItem.productId}</p>
-                <p><span className="font-semibold">Quantity:</span> {orderItem.quantity}</p>
-                <p><span className="font-semibold">Price:</span> ₹{orderItem.price}</p>
+                <p>
+                  <span className="font-semibold">Order ID:</span> #
+                  {orderItem.order.id}
+                </p>
+                <p>
+                  <span className="font-semibold">Product ID:</span>{" "}
+                  {orderItem.productId}
+                </p>
+                <p>
+                  <span className="font-semibold">Quantity:</span>{" "}
+                  {orderItem.quantity}
+                </p>
+                <p>
+                  <span className="font-semibold">Price:</span> ₹
+                  {orderItem.price}
+                </p>
                 <Link to={`/product/${orderItem.product.id}`}>
-                <div className='py-2 px-3 rounded bg-gray-100 mt-3 mb-2'>
+                  <div className="py-2 px-3 rounded bg-gray-100 mt-3 mb-2">
                     <p>Product Information </p>
-                    <div className='relative'>
-                        <p className='mt-3 font-bold  text-lg '>{orderItem.product.name}</p>
-                        <img src={`${orderItem.product.image}`} className='mt-2 rounded max-w-[260px]'/>
-                        <div className='mt-2 absolute bottom-4 flex gap-2 items-start flex-wrap justify-center'>
-                          {
-                            orderItem.product.category.map((cat, index) => (
-                              <span key={index} className="bg-white  px-2 py-1 rounded  text-blue-600">{cat} {index < orderItem.product.category.length - 1 ? ',' : ''}</span>
-                            ))
-                          }
-                        </div>
+                    <div className="relative">
+                      <p className="mt-3 font-bold  text-lg ">
+                        {orderItem.product.name}
+                      </p>
+                      <img
+                        src={`${orderItem.product.image}`}
+                        className="mt-2 rounded max-w-[260px]"
+                      />
+                      <div className="mt-2 absolute bottom-4 flex gap-2 items-start flex-wrap justify-center">
+                        {orderItem.product.category.map((cat, index) => (
+                          <span
+                            key={index}
+                            className="bg-white  px-2 py-1 rounded  text-blue-600"
+                          >
+                            {cat}{" "}
+                            {index < orderItem.product.category.length - 1
+                              ? ","
+                              : ""}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                </div>
+                  </div>
                 </Link>
               </div>
             </div>
@@ -123,7 +167,10 @@ const token = localStorage.getItem('token');
                 <div className="inline-block px-4 py-2 text-red-700 bg-red-100 rounded-full font-semibold mb-4">
                   Order Cancelled
                 </div>
-                <p className="text-gray-600">This order has been cancelled and will not be processed further.</p>
+                <p className="text-gray-600">
+                  This order has been cancelled and will not be processed
+                  further.
+                </p>
               </div>
             ) : (
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -131,7 +178,10 @@ const token = localStorage.getItem('token');
                   <div
                     key={status}
                     className="flex-1 flex flex-col items-center relative"
-                    style={{ opacity: index <= STATUS_FLOW.indexOf(currentStatus) ? 1 : 1 }}
+                    style={{
+                      opacity:
+                        index <= STATUS_FLOW.indexOf(currentStatus) ? 1 : 1,
+                    }}
                   >
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold z-10 ${
@@ -145,7 +195,7 @@ const token = localStorage.getItem('token');
                       {index + 1}
                     </div>
                     <span className="mt-2 text-center text-sm capitalize">
-                      {status.replace(/-/g, ' ')}
+                      {status.replace(/-/g, " ")}
                     </span>
                     {index !== STATUS_FLOW.length - 1 && (
                       <>

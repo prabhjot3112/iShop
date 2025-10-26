@@ -1,21 +1,29 @@
-import React from 'react';
-import Header from '../../components/Header';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from "react";
+import Header from "../../components/Header";
+import { Link, useNavigate } from "react-router-dom";
 
 const VendorHome = () => {
   const menuItems = [
-    { title: 'Sales', link: '/vendor/sales' },
-    { title: 'Add Product', link: '/vendor/add-product' },
-    { title: 'My Products', link: '/vendor/products' },
-    { title: 'Orders', link: '/vendor/orders' },
+    { title: "Sales", link: "/vendor/sales" },
+    { title: "Add Product", link: "/vendor/add-product" },
+    { title: "My Products", link: "/vendor/products" },
+    { title: "Orders", link: "/vendor/orders" },
   ];
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!localStorage.getItem("token")) navigate("/");
+
+    return () => {};
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
 
       <div className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Vendor Dashboard</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+          Vendor Dashboard
+        </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {menuItems.map((item, index) => (
