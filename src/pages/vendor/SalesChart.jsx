@@ -122,15 +122,31 @@ const handleCategoryChange = (selectedOptions) => {
       },
     ],
   };
-
-  const options = {
-    responsive:true,
-    plugins: {
-      legend: {
-        position: 'top',
+const options = {
+  responsive: true,
+  plugins: {
+    legend: { position: 'top' },
+    tooltip: {
+      callbacks: {
+        label: (context) => `Units Sold: ${context.raw.toLocaleString()}`,
       },
     },
-  };
+  },
+  scales: {
+    y: {
+      ticks: {
+        callback: (value) => `₹${value.toLocaleString()}`,
+      },
+    },
+    x: {
+      ticks: {
+        autoSkip: true,
+        maxTicksLimit: 10,
+      },
+    },
+  },
+};
+
 
   return (
     <div>

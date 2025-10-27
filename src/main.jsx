@@ -6,13 +6,16 @@ import { UserProvider } from "./context/UserContext.jsx";
 import { SearchProvider } from "./context/SearchContext.jsx";
 import { BuyerOrderProvider } from "./context/BuyerOrderContext.jsx";
 import { BuyerHomeProvider } from "./context/BuyerHomeProducts.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   <UserProvider>
     <SearchProvider>
       <BuyerOrderProvider>
         <BuyerHomeProvider>
+          <NotificationProvider>
         <App />
+          </NotificationProvider>
         </BuyerHomeProvider>
       </BuyerOrderProvider>
     </SearchProvider>

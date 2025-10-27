@@ -20,12 +20,16 @@ const STATUS_FLOW = [
 const TrackOrder = () => {
   const { id } = useParams();
   const [orderItem, setOrderItem] = useState(null);
+  const [loading, setLoading] = useState(true)
   const [currentStatus, setCurrentStatus] = useState("");
   const isCancelled = currentStatus === "cancelled";
-
+  const [errorMessage, setErrorMessage] = useState('')
+  
   useEffect(() => {
     const trackOrder = async () => {
       const token = localStorage.getItem("token");
+      if(!token) 
+        navigate('/')
       try {
         const { data } = await axios.get(
           `${BASE_URL}/orders/order/item/track/${id}`,
@@ -38,7 +42,11 @@ const TrackOrder = () => {
         setOrderItem(data.orderItem);
         setCurrentStatus(data.orderItem.status);
       } catch (error) {
-        toast.error(error.response?.data?.error || "Something went wrong");
+        console.log('error is:',error)
+        toast.error(error.response?.data?.error || error.response?.data?.message || "Something went wrong");
+        setErrorMessage(error.response?.data?.error || error.response?.data?.message || 'Something went wrong')
+      }finally{
+        setLoading(false)
       }
     };
 
@@ -108,12 +116,12 @@ const TrackOrder = () => {
           Track Your Order Item
         </h2>
 
-        {!orderItem ? (
+        {loading ? (
           <div className="w-full justify-center flex mt-10">
             <div className="w-14 h-14 rounded-full animate-spin border-2 border-t-transparent border-blue-600"></div>
           </div>
         ) : (
-          <>
+          orderItem && errorMessage ==''  ? <>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p>
@@ -210,7 +218,7 @@ const TrackOrder = () => {
                 ))}
               </div>
             )}
-          </>
+          </> : errorMessage && <div className="mt-5 font-black text-lg text-center text-red-600">Sorry , {errorMessage}</div>
         )}
       </div>
     </div>

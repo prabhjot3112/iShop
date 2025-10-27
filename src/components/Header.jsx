@@ -190,6 +190,17 @@ const hasChecked = useRef(false);
           >
             My Orders
           </button>}
+
+          {location.pathname != 'notifications' && <button
+          className="block w-full text-left text-blue-600 hover:underline mb-2"
+          onClick={() => {
+                             navigate("/notifications")
+
+            closeMenu();
+          }}
+        >
+          Notifications
+        </button>}
          <PushNotificationToggle
   userType={userType}
   isLoggedIn={isLoggedIn}
@@ -245,6 +256,19 @@ const hasChecked = useRef(false);
           }}
         >
           My Orders
+        </button>}
+
+
+
+        {(location.pathname != 'notifications/buyer' || location.pathname != 'notifications/vendor') && <button
+          className="block w-full text-left text-blue-600 hover:underline mb-2"
+          onClick={() => {
+                    navigate("/notifications")
+
+            closeMenu();
+          }}
+        >
+          Notifications
         </button>}
        <PushNotificationToggle
   userType={userType}

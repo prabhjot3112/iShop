@@ -26,8 +26,12 @@ import SalesChart from "./pages/vendor/SalesChart";
 import TrackOrder from "./pages/buyer/TrackOrder";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
+import Notifications from "./pages/Notifications";
+import { useNotificationContext } from "./context/NotificationContext";
 
 export default function App() {
+  const notificationContext = useNotificationContext()
+
   const [userInfo, setUserInfo] = useState({
     token:localStorage.getItem('token'),
     userType:localStorage.getItem('userType')
@@ -48,7 +52,9 @@ export default function App() {
     evtSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        toast.info(`New order: ${data.productName}`);
+        toast.info(`🛒 New order : ${data.productName}`);
+        notificationContext.setNotifications(prev => [...(prev || []), `🛒 New order: ${data.productName}`]);
+
       } catch (err) {
         console.error("Failed to parse vendor SSE data", err);
       }
@@ -65,12 +71,15 @@ export default function App() {
       try {
         const data = JSON.parse(event.data);
         toast.info(data.message || `Order status updated to ${data.status}`);
+        notificationContext.setNotifications(prev => [...(prev || []), `${data.message}`]);
+
       } catch (err) {
         console.error("Failed to parse buyer SSE data", err);
       }
     };
   }
 
+  
   evtSource.onerror = (err) => {
     console.error("SSE connection error", err);
     evtSource.close();
@@ -118,6 +127,8 @@ export default function App() {
         <Route path="/buyer/order-success/:id" element={<OrderSuccess />} />
         <Route path="/buyer/orders" element={<Orders />} />
 
+
+        <Route path="/notifications" element={<Notifications />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/product/:id" element={<ProductDetails />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
