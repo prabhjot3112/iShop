@@ -124,13 +124,12 @@ try {
     setIsLoading(true)
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
-
-    if (subscription) {
-      await subscription.unsubscribe();
+    console.log('subscription is:',subscription)
+    if (true) {
+      // await subscription.unsubscribe();
 
       const token = localStorage.getItem("token");
       try{
-
         const {data} = await axios.post(`${import.meta.env.VITE_API_URL}/notifications/unsubscribe/${userType === 'buyer' ? 'buyer' : 'vendor'}`,{
           endpoint:subscription.endpoint
         },{

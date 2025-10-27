@@ -28,74 +28,63 @@ import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 
 export default function App() {
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+  const [userInfo, setUserInfo] = useState({
+    token:localStorage.getItem('token'),
+    userType:localStorage.getItem('userType')
+  })
+ useEffect(() => {
+  if (!userInfo.token || !userInfo.userType) return;
 
-    const userType = localStorage.getItem("userType"); // “vendor” or “buyer”
-    if (!userType) return;
+  console.log("Starting event listener for:", userInfo.userType);
 
-    if (userType) console.log("usertype is:", userType);
+  let evtSource;
 
-    if (userType === "vendor") {
-      const evtSource = new EventSource(
-        `${import.meta.env.VITE_API_URL}/orders/updates/vendor/${token}`
-      );
-      console.log("event source:", evtSource);
-      evtSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log("data is:", data);
-          if (userType === "vendor") {
-            toast.info(`New order: ${data.productName}`);
-          }
-          // Also, you can update some global state or context if needed
-        } catch (err) {
-          console.error("Failed to parse SSE data", err);
-        }
-      };
-      evtSource.onerror = (err) => {
-        console.error("SSE connection error", err);
-        evtSource.close();
-      };
+  if (userInfo.userType === "vendor") {
+    evtSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/orders/updates/vendor/${userInfo.token}`
+    );
+    console.log("Vendor event source started");
 
-      return () => {
-        evtSource.close();
-      };
+    evtSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        toast.info(`New order: ${data.productName}`);
+      } catch (err) {
+        console.error("Failed to parse vendor SSE data", err);
+      }
+    };
+  } 
+  
+  if (userInfo.userType === "buyer") {
+    evtSource = new EventSource(
+      `${import.meta.env.VITE_API_URL}/orders/updates/buyer/${userInfo.token}`
+    );
+    console.log("Buyer event source started");
+
+    evtSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        toast.info(data.message || `Order status updated to ${data.status}`);
+      } catch (err) {
+        console.error("Failed to parse buyer SSE data", err);
+      }
+    };
+  }
+
+  evtSource.onerror = (err) => {
+    console.error("SSE connection error", err);
+    evtSource.close();
+  };
+
+  return () => {
+    if (evtSource) {
+      console.log("Closing SSE for", userInfo.userType);
+      evtSource.close();
     }
-  }, []);
+  };
+}, [userInfo.token, userInfo.userType]);
 
-  useEffect(() => {
-    if (localStorage.getItem("userType") == "buyer") {
-      const token = localStorage.getItem("token");
-      const evtSource = new EventSource(
-        `${import.meta.env.VITE_API_URL}/orders/updates/buyer/${token}`
-      );
-      console.log("event source:", evtSource);
-
-      evtSource.onmessage = (event) => {
-        try {
-          // console.log('actual event:',event.toString())
-          const data = JSON.parse(event.data);
-          console.log("event data is:", data);
-          // Show toast notification
-          toast.info(data.message || `Order status updated to ${data.status}`);
-        } catch (e) {
-          console.error("Failed to parse SSE data", e);
-        }
-      };
-
-      evtSource.onerror = () => {
-        console.error("SSE connection error, closing");
-        evtSource.close();
-      };
-
-      return () => {
-        evtSource.close();
-      };
-    }
-  }, []);
-
+  
   const [orderItems, setOrderItems] = useState([]);
 
   return (
@@ -105,7 +94,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/search" element={<Search />} />
         <Route path="/vendor/register" element={<VendorRegister />} />
-        <Route path="/vendor/login" element={<VendorLogin />} />
+        <Route path="/vendor/login" element={<VendorLogin setUserInfo={setUserInfo} userInfo={userInfo} />} />
         <Route path="/vendor/home" element={<VendorHome />} />
         <Route path="/vendor/add-product" element={<AddProducts />} />
         <Route path="/vendor/products" element={<AddedProducts />} />
@@ -123,7 +112,7 @@ export default function App() {
 
         <Route path="/buyer/home" element={<BuyerHome />} />
         <Route path="/buyer/register" element={<BuyerRegister />} />
-        <Route path="/buyer/login" element={<BuyerLogin />} />
+        <Route path="/buyer/login" element={<BuyerLogin setUserInfo={setUserInfo} userInfo={userInfo}/>} />
         <Route path="/buyer/cart" element={<Cart />} />
         <Route path="/buyer/order/track/:id" element={<TrackOrder />} />
         <Route path="/buyer/order-success/:id" element={<OrderSuccess />} />

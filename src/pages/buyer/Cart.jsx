@@ -68,7 +68,6 @@ const Cart = () => {
 
     return (
         <div>
-  <ToastContainer />
   <Header />
 
   {isVerifyingPayment && (

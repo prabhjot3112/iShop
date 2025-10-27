@@ -70,7 +70,6 @@ if (Array.isArray(errors)) {
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md mt-10">
 
-        <ToastContainer />
       <h2 className="text-2xl font-bold mb-6 text-center">Register as a Vendor</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

@@ -8,7 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-const BuyerLogin = () => {
+const BuyerLogin = ({setUserInfo , userInfo}) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -50,6 +50,7 @@ const BuyerLogin = () => {
       toast.success(data.message);
       localStorage.setItem("token", data.token);
       localStorage.setItem("userType", "buyer");
+      setUserInfo({token: data.token , userType:'buyer'})
       setUser(data.user);
       setFormData({ email: "", password: "" });
       setTimeout(() => navigate("/buyer/home"), 2500);
@@ -67,7 +68,7 @@ const BuyerLogin = () => {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md mt-10">
-      <ToastContainer />
+   
       <h2 className="text-2xl font-bold mb-6 text-center">Buyer Login</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">

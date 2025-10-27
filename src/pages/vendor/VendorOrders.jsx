@@ -74,7 +74,6 @@ const VendorOrders = ({orderItems , setOrderItems }) => {
   return (
     <div>
       <Header />
-      <ToastContainer />
      {  isLoading ? <div className='w-full flex justify-center mt-7'>
       <div className='w-14 h-14 border-2 rounded-full border-t-transparent border-blue-700 animate-spin'></div>
      </div> : <div>
@@ -82,7 +81,7 @@ const VendorOrders = ({orderItems , setOrderItems }) => {
      <h3 className='font-bold text-xl mt-5 text-center'>
         Orders of your Products
       </h3>
-     {orderItems.length > 0 ?  <div className='p-4 grid grid-cols-1 gap-8  md:grid-cols-2 max-w-4xl mx-auto mt-4'>
+     {orderItems.length > 0 ?  <div className='p-4 grid grid-cols-1 gap-8  md:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto mt-4'>
         {
           orderItems.map((orderItem,id) => (
             <div key={orderItem.id} className='flex flex-col p-3 hover:scale-105 transition cursor-pointer gap-3 w-full shadow-xl bg-gray-50 rounded '>
@@ -99,7 +98,7 @@ const VendorOrders = ({orderItems , setOrderItems }) => {
                 </h4>
                 <div className='relative'>
                 <img src={`${orderItem.product.image}`} 
-                  className="w-full h-48 object-cover"
+                  className="w-full object-cover"
 />
 <div className='flex justify-start flex-wrap mt-2 gap-2'>
 {

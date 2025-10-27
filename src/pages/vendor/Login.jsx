@@ -8,7 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-const VendorLogin = () => {
+const VendorLogin = ({setUserInfo}) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -51,7 +51,7 @@ const VendorLogin = () => {
       localStorage.setItem("token", data.token);
       setUser(data.vendor);
       localStorage.setItem("userType", "vendor");
-
+      setUserInfo({token:data.token , userType: 'vendor'})
       setFormData({ email: "", password: "" });
       setTimeout(() => navigate("/vendor/home"), 2500);
     } catch (error) {
@@ -71,7 +71,7 @@ const VendorLogin = () => {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-md mt-10">
-      <ToastContainer />
+      
       <h2 className="text-2xl font-bold mb-6 text-center">Vendor Login</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">

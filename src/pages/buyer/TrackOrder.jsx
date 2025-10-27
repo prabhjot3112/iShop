@@ -96,7 +96,6 @@ const TrackOrder = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <ToastContainer />
       <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-md shadow">
         <button
           className="cursor-pointer mb-4 rounded border border-black px-2 py-1 inline-flex justify-center items-center bg-blue-50"

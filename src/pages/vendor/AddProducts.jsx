@@ -124,7 +124,6 @@ console.log('formdata:',formData)
   return (
     <div>
       <Header />
-      <ToastContainer />
 
     { isPageLoading ? <div className='w-full flex justify-center mt-10'>
       <div className='w-14 h-14 rounded-full animate-spin border border-t-transparent border-blue-700'></div>

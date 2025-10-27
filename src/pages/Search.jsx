@@ -36,19 +36,20 @@ const changePage = async(page) => {
 }
 
 const renderPagination = () => {
-  const totalPages = searchData.totalPages  || 1;
-  const maxVisiblePages = 5;
+  const totalPages = searchData.totalPages || 1;
+  const currentPage = searchData.currentPage || 1;
+  const visibleRange = 2; // show 2 before and 2 after current
   const pageButtons = [];
 
-  const startPage = Math.max(1, searchData.currentPage - Math.floor(maxVisiblePages / 2));
-  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+  const startPage = Math.max(1, currentPage - visibleRange);
+  const endPage = Math.min(totalPages, currentPage + visibleRange);
 
   // Previous Button
-  if (searchData.currentPage > 1) {
+  if (currentPage > 1) {
     pageButtons.push(
       <button
         key="prev"
-        onClick={() => changePage(searchData.currentPage - 1)}
+        onClick={() => changePage(currentPage - 1)}
         className="px-3 py-2 border rounded hover:bg-blue-600 hover:text-white"
       >
         Prev
@@ -56,10 +57,16 @@ const renderPagination = () => {
     );
   }
 
-  // Leading Ellipsis
+  // Leading Ellipsis if needed
   if (startPage > 1) {
     pageButtons.push(
-      <button key={1} onClick={() => changePage(1)} className="px-3 py-2 border rounded">
+      <button
+        key={1}
+        onClick={() => changePage(1)}
+        className={`px-3 py-2 border rounded ${
+          currentPage === 1 ? 'bg-blue-600 text-white' : 'hover:bg-blue-600 hover:text-white'
+        }`}
+      >
         1
       </button>
     );
@@ -75,7 +82,7 @@ const renderPagination = () => {
         key={i}
         onClick={() => changePage(i)}
         className={`px-3 py-2 border rounded ${
-          searchData.currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-blue-600 hover:text-white'
+          currentPage === i ? 'bg-blue-600 text-white' : 'hover:bg-blue-600 hover:text-white'
         }`}
       >
         {i}
@@ -83,24 +90,30 @@ const renderPagination = () => {
     );
   }
 
-  // Trailing Ellipsis
+  // Trailing Ellipsis if needed
   if (endPage < totalPages) {
     if (endPage < totalPages - 1) {
       pageButtons.push(<span key="end-ellipsis">...</span>);
     }
     pageButtons.push(
-      <button key={totalPages} onClick={() => changePage(totalPages)} className="px-3 py-2 border rounded">
+      <button
+        key={totalPages}
+        onClick={() => changePage(totalPages)}
+        className={`px-3 py-2 border rounded ${
+          currentPage === totalPages ? 'bg-blue-600 text-white' : 'hover:bg-blue-600 hover:text-white'
+        }`}
+      >
         {totalPages}
       </button>
     );
   }
 
   // Next Button
-  if (searchData.currentPage < searchData.totalPages) {
+  if (currentPage < totalPages) {
     pageButtons.push(
       <button
         key="next"
-        onClick={() => changePage(searchData.currentPage + 1)}
+        onClick={() => changePage(currentPage + 1)}
         className="px-3 py-2 border rounded hover:bg-blue-600 hover:text-white"
       >
         Next
@@ -110,6 +123,7 @@ const renderPagination = () => {
 
   return <div className="flex flex-wrap justify-center gap-2 mt-10">{pageButtons}</div>;
 };
+
 
 
   const startSearch = async () => {

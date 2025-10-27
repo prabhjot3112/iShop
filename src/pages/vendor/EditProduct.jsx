@@ -245,7 +245,6 @@ const handleSubmit = async (e) => {
   return (
     <div>
       <Header />
-      <ToastContainer />
 {isPageLoading ? <div className='mt-10 flex justify-center items-center '>
   <div className='w-14 h-14 rounded-full border border-t-transparent border-b-blue-600 animate-spin'></div>
 </div> :
