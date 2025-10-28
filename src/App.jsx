@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import Notifications from "./pages/Notifications";
 import { useNotificationContext } from "./context/NotificationContext";
+import { ProductCategoriesProvider } from "./context/ProductCategoriesContext";
 
 export default function App() {
   const notificationContext = useNotificationContext()
@@ -105,7 +106,16 @@ export default function App() {
         <Route path="/vendor/register" element={<VendorRegister />} />
         <Route path="/vendor/login" element={<VendorLogin setUserInfo={setUserInfo} userInfo={userInfo} />} />
         <Route path="/vendor/home" element={<VendorHome />} />
-        <Route path="/vendor/add-product" element={<AddProducts />} />
+      
+        <Route path="/vendor/add-product" element={
+          <AddProducts />
+        } />
+        <Route path="/vendor/product/edit/:id" element={
+          <ProductCategoriesProvider>
+          <EditProduct />
+          </ProductCategoriesProvider>
+          } />
+        
         <Route path="/vendor/products" element={<AddedProducts />} />
         <Route
           path="/vendor/orders"
@@ -116,7 +126,6 @@ export default function App() {
             />
           }
         />
-        <Route path="/vendor/product/edit/:id" element={<EditProduct />} />
         <Route path="/vendor/sales" element={<SalesChart />} />
 
         <Route path="/buyer/home" element={<BuyerHome />} />

@@ -7,6 +7,8 @@ import { SearchProvider } from "./context/SearchContext.jsx";
 import { BuyerOrderProvider } from "./context/BuyerOrderContext.jsx";
 import { BuyerHomeProvider } from "./context/BuyerHomeProducts.jsx";
 import { NotificationProvider } from "./context/NotificationContext.jsx";
+import { AddedProductsProvider } from "./context/AddedProductsContext.jsx";
+import { ProductCategoriesProvider } from "./context/ProductCategoriesContext";
 
 createRoot(document.getElementById("root")).render(
   <UserProvider>
@@ -14,7 +16,11 @@ createRoot(document.getElementById("root")).render(
       <BuyerOrderProvider>
         <BuyerHomeProvider>
           <NotificationProvider>
+            <AddedProductsProvider>
+              <ProductCategoriesProvider>
         <App />
+              </ProductCategoriesProvider>
+            </AddedProductsProvider>
           </NotificationProvider>
         </BuyerHomeProvider>
       </BuyerOrderProvider>

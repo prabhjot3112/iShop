@@ -5,6 +5,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { FaPencilAlt, FaTimes, FaTrash } from 'react-icons/fa';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
+import { useAddedProducts } from '../../context/AddedProductsContext';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -12,6 +13,7 @@ const AddedProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true); 
   const {user} = useUser()
+  const {AddedProducts , setAddedProducts , isLoading , setIsLoading} = useAddedProducts()
 
   const [isDeleteOpen, setIsDeleteOpen] = useState({isTrue:false , id:null})
     
@@ -27,14 +29,13 @@ const AddedProducts = () => {
       })
       console.log('data is:',data)
     if (data?.message === 'Success') {
-  const updatedProducts = products.filter(product => product.id !== parseInt(id));
+  const updatedProducts = AddedProducts.filter(product => product.id !== parseInt(id));
   console.log('updatedProducts:',updatedProducts)
   setProducts(updatedProducts);
   setIsDeleteOpen({isTrue:false , id:null})
   toast.success('Product Deleted Successfully');
+  setAddedProducts(updatedProducts);
 }
-
-
     } catch (error) {
       setIsDeleteOpen({isTrue:false , id:null})
       toast.error(error.response.data.error) 
@@ -58,11 +59,13 @@ const AddedProducts = () => {
           },
         });
         setProducts(data.products);
+        setAddedProducts(data.products)
         console.log('products are:',data.products)
       } catch (error) {
         toast.error(error.response?.data?.error || 'Failed to fetch products');
       } finally {
         setLoading(false);
+        setIsLoading(false)
       }
     };
 
@@ -77,13 +80,13 @@ const AddedProducts = () => {
       <div className="max-w-6xl mx-auto px-4 py-10">
         <h2 className="text-3xl font-semibold text-gray-800 mb-6">My Products</h2>
 
-        {loading ? (
+        {isLoading ? (
           <div className=" animate-spin w-14 h-14 mx-auto rounded-full border-t-transparent border-r-blue-600 border-2 border-b-blue-600"></div> // 🔹 Show loading
-        ) : products.length === 0 ? (
+        ) : AddedProducts.length === 0 ? (
           <p className="text-gray-500 text-lg">You haven’t added any products yet.</p> 
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {products.map((product) => (
+            {AddedProducts && AddedProducts.map((product) => (
               <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
                 <img
                   src={product.image}

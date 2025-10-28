@@ -4,9 +4,13 @@ import { toast, ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import { FaCross, FaTimes, FaUpload } from 'react-icons/fa';
 import CategorySelect from '../../components/CategorySelect';
+import { useNavigate } from 'react-router-dom';
+import { useAddedProducts } from '../../context/AddedProductsContext';
+import { useProductCategories } from '../../context/ProductCategoriesContext';
 const BASE_URL = import.meta.env.VITE_API_URL
 
 const AddProducts = () => {
+  const {loading , setLoading , categories , setCategories , isFetched , setIsFetched} = useProductCategories()
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -24,24 +28,31 @@ const [fetchedCategory, setFetchedCategory] = useState([])
     const fetchCategories = async () => {
       try {
         setIsPageLoading(true)
+        setLoading(true)
         const token = localStorage.getItem('token');
         const response = await axios.get(`${BASE_URL}/product/categories`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        const categories = response.data.categories;
         console.log('res is: ',response.data[0].name)
-        setFetchedCategory(response.data)
+        setCategories(response.data)
+
         // Process categories if needed
       } catch (error) {
         console.error('Error fetching categories:', error);
       }finally{
         setIsPageLoading(false)
+        setLoading(false)
+        setIsFetched(true)
       }
     };
+    if(isFetched == false)
+    {
+      console.log('not fetched')
+      console.log('categories:',categories)
       fetchCategories();
-   
+    }
   
     return () => {
       
@@ -72,6 +83,8 @@ const [fetchedCategory, setFetchedCategory] = useState([])
       }));
     }
   };
+  const navigate = useNavigate()
+  const{setAddedProducts} = useAddedProducts()
 const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.image) {
@@ -107,6 +120,8 @@ console.log('formdata:',formData)
     image: null,
       })
       setImagePreview(null)
+      setAddedProducts(prev => [...prev , data1.data.product])
+      navigate('/vendor/products')
     } catch (error) {   
           const errors = error.response?.data?.errors;
     if(errors){
@@ -125,7 +140,7 @@ console.log('formdata:',formData)
     <div>
       <Header />
 
-    { isPageLoading ? <div className='w-full flex justify-center mt-10'>
+    { loading ? <div className='w-full flex justify-center mt-10'>
       <div className='w-14 h-14 rounded-full animate-spin border border-t-transparent border-blue-700'></div>
     </div> :   <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
         <h2 className="text-2xl font-bold mb-6 text-center">Add New Product</h2>
@@ -220,7 +235,7 @@ console.log('formdata:',formData)
 
           <div>
             <label className="block text-gray-700 mb-2">Category</label>
-            <CategorySelect formData={formData} setFormData={setFormData}  fetchedCategory={fetchedCategory}/>
+            <CategorySelect formData={formData} setFormData={setFormData}  fetchedCategory={categories}/>
           </div>
 
 
