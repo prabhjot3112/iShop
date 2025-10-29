@@ -15,6 +15,7 @@ const Search = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const { searchData, setSearchData } = useSearch();
+  const [error, setError] = useState('')
     const {loading , setLoading , categories , setCategories , isFetched , setIsFetched} = useProductCategories()
    // only take categories
 
@@ -28,13 +29,14 @@ const Search = () => {
         const {data} = await axios.get(`${apiUrl}/product/categories/all`);
         console.log('data is:',data)
         setCategories(data.categories)
-
       } catch (error) {
        toast.error(error.response.data.message || error.response.data.error) 
       }finally{
+        setIsFetched(true)
         setLoading(false)
       }
     }
+    if(!isFetched)
   getProductCategories()
     return () => {
       
@@ -45,8 +47,15 @@ const Search = () => {
   // Handle search + category filter
   const startSearch = async (page = 1) => {
     if (!searchData.search.trim()) return;
-
+    setError('')
     setIsLoading(true);
+     // Reset search data
+  setSearchData(prev => ({
+    ...prev,
+    results: [],
+    currentPage: 1,
+    totalPages: null
+  }));
     // setCategories([])
     try {
       // Append category filter if selected
@@ -64,6 +73,8 @@ const Search = () => {
       });
     } catch (err) {
       console.error('Search failed:', err.message);
+      setError(`${err.response.data.error || err.response.data.message}`)
+      toast.error(`${err.response.data.error || err.response.data.message}`)
       setData([]);
     } finally {
       setIsLoading(false);
@@ -161,7 +172,7 @@ const Search = () => {
         )}
 
         {/* Search Results */}
-        {!isLoading && searchData.results.length > 0 && (
+        {!isLoading && searchData.results && searchData.results.length > 0 && (
           <>
             <div className="grid mt-10 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {searchData.results.map(product => (
@@ -191,12 +202,11 @@ const Search = () => {
           </>
         )}
 
-        {/* No Results */}
-        {!isLoading && isSearched && data.length === 0 && (
-          <div className="text-center text-red-600 mt-8 text-lg">
-            No products found
-          </div>
-        )}
+        {
+          error && !isLoading && <div className='mt-5 text-red-600 font-bold text-center'>{error}</div>
+        }
+
+
       </div>}
     </div>
   );

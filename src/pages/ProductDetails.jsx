@@ -42,7 +42,7 @@ const ProductDetails = () => {
 
     } catch (error) {
 
-                toast.error(`${error.response.data.message} `)
+                toast.error(`${error.response.data.message || error.response.data.error} `)
     }finally{
       setUpdateCartLoading(false)
     }
@@ -58,7 +58,7 @@ headers:{
         toast.success('Product deleted from cart')
         setIncartOrNot(false)
     } catch (error) {
-                        toast.error(`Error occured: ${error.response.data.error} `)
+                        toast.error(`${error.response.data.error || error.response.data.message} `)
 
     }finally{
       setDeleteCartLoading(false)
@@ -79,7 +79,7 @@ headers:{
         setTotalItemsIncart(1)
     } catch (error) {
         console.log('error is:',error)
-                toast.error(`Error occured: ${error.response.data.message} `)
+                toast.error(`${error.response.data.message || error.response.data.error} `)
         
     }finally{
         setAddCartLoading(false)

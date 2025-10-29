@@ -72,7 +72,7 @@ export default function App() {
       try {
         const data = JSON.parse(event.data);
         toast.info(data.message || `Order status updated to ${data.status}`);
-        // notificationContext.setNotifications(prev => [...(prev || []), `${data.message}`]);
+        notificationContext.setNotifications(prev => [...(prev || []), `${data.message}`]);
 
       } catch (err) {
         console.error("Failed to parse buyer SSE data", err);
