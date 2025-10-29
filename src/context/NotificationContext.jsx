@@ -7,7 +7,7 @@ const NotificationContext = createContext()
 export const useNotificationContext = () => useContext(NotificationContext)
 
 export const NotificationProvider = ({children}) => {
-    const [notifications, setNotifications] = useState({})
+    const [notifications, setNotifications] = useState([])
     const [isLoading, setIsLoading] = useState(true)
     return <NotificationContext.Provider value={{notifications , setNotifications , isLoading , setIsLoading}}>{children}</NotificationContext.Provider>
 }

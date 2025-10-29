@@ -37,6 +37,8 @@ const Notifications = () => {
 };
 
     useEffect(() => {
+      if(!localStorage.getItem('token'))
+        return navigate('/')
       console.log('context is:' , context)
       const token = localStorage.getItem('token')
         const apiCall = async() => {

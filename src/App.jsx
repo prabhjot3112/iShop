@@ -14,7 +14,7 @@ import AddProducts from "./pages/vendor/AddProducts";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/buyer/Cart";
 import RefundPolicy from "./pages/RefundPolicy";
-import ShippingPolicy from "./pages/ShippingPolicy";
+import ShippingPolicy from "./pages/ShippingPolicy"   ;
 import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import OrderSuccess from "./pages/OrderSuccess";
@@ -72,7 +72,7 @@ export default function App() {
       try {
         const data = JSON.parse(event.data);
         toast.info(data.message || `Order status updated to ${data.status}`);
-        notificationContext.setNotifications(prev => [...(prev || []), `${data.message}`]);
+        // notificationContext.setNotifications(prev => [...(prev || []), `${data.message}`]);
 
       } catch (err) {
         console.error("Failed to parse buyer SSE data", err);

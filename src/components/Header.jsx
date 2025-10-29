@@ -6,6 +6,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import PushNotificationToggle from './PushNotificationToggle';
 import { useRef } from 'react';
+import { useNotificationContext } from '../context/NotificationContext';
 const VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 const Header = () => {
   const location = useLocation()
@@ -24,6 +25,7 @@ const Header = () => {
   }
     const {user , setUser} = useUser();
 const [permission, setPermission] = useState(Notification.permission);
+const { setNotifications , setIsLoading} = useNotificationContext()
 
   const logout = async () => {
     // alert('ok')
@@ -58,6 +60,8 @@ const [permission, setPermission] = useState(Notification.permission);
   setPermission('default');
   localStorage.removeItem('token');
   localStorage.removeItem('userType');
+  setNotifications([])
+  setIsLoading(true)
   setUser(null);
   navigate('/');
 };

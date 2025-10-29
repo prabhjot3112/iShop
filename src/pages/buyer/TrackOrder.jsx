@@ -68,9 +68,6 @@ const TrackOrder = () => {
         // Only update if this update matches the current order item being tracked
         if (data.orderItemId === parseInt(id)) {
           setCurrentStatus(data.status);
-
-          // Show toast notification
-          toast.info(data.message || `Order status updated to ${data.status}`);
         }
       } catch (e) {
         console.error("Failed to parse SSE data", e);
