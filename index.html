@@ -18,6 +18,24 @@
       })
       .catch((err) => console.error('Service Worker registration failed:', err));
   }
+
+</script>
+<script src="https://chatbot-server-puce.vercel.app/embed.js" defer></script>
+<script>
+  window.addEventListener('DOMContentLoaded' , () => {
+    window.initChatbot?.({domain:'eCommerce - iShop' , chatbotName:'iShop-Chat' , theme:'dark', data:`Platform name: iShop , for buyer and , vendors.
+     Official ishop site: i-shop31.vercel.app ,
+      pages: {domain}/privacy-policy , /refund-policy , 
+      /shipping-policy , tnc page is /terms ,
+       /contact , /search , with a input and category filter ,
+        for buyer , orders listed in {domain}/buyer/orders ,
+         notifications are in /notifications.   
+         Vendor can add a product with some categories like electronics ,
+          home appliances , clothing , books , sports , beauty , automotive and jewelry.
+           Secure payments using razorpay for product purchase.
+            Benefits of platform: order tracking for buyers ,
+             instant notification using push-notification and sse from server side (don't go technical for users if asked , this is for your understanding), add-to-cart feature.`})
+  })
 </script>
 
 
