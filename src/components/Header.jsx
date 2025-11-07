@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import { FaTimes, FaUser, FaUserCircle } from 'react-icons/fa'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useUser } from '../context/UserContext'
-import axios from 'axios';
 import { toast } from 'react-toastify';
 import PushNotificationToggle from './PushNotificationToggle';
 import { useRef } from 'react';
 import { useNotificationContext } from '../context/NotificationContext';
+import './styles/Header.style.css'
 const VAPID_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 const Header = () => {
   const location = useLocation()
@@ -24,7 +24,7 @@ const Header = () => {
     setIsOpen(false)
   }
     const {user , setUser} = useUser();
-const [permission, setPermission] = useState(Notification.permission);
+// const [permission, setPermission] = useState(Notification.permission);
 const { setNotifications , setIsLoading} = useNotificationContext()
 
   const logout = async () => {
@@ -57,7 +57,7 @@ const { setNotifications , setIsLoading} = useNotificationContext()
     toast.error(error.response.data.error)
   }
 
-  setPermission('default');
+  // setPermission('default');
   localStorage.removeItem('token');
   localStorage.removeItem('userType');
   setNotifications([])
@@ -134,90 +134,108 @@ const hasChecked = useRef(false);
   
 
   return (
-    <header className="w-full bg-white shadow-md sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        {/* Logo */}
-        <div
-          onClick={() => {
-            navigate('/')
-            closeMenu()
-          }}
-          className="text-2xl cursor-pointer font-bold text-blue-600"
-        >
-          iShop
+  <header className="header w-full bg-white shadow-md sticky top-0 z-50">
+  <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    {/* Logo */}
+    <div
+      className="text-2xl cursor-pointer font-bold text-blue-600"
+      onClick={() => { navigate('/'); closeMenu(); }}
+    >
+      iShop
+    </div>
+
+    {/* Hamburger - Mobile */}
+    <button className="hamburger" onClick={toggleMenu}>
+      {!isOpen ? '☰' : <FaTimes />}
+    </button>
+
+    {/* Desktop Nav */}
+    <nav className="desktop-nav">
+      {navLinks.map((link, idx) => 
+        link.show && (
+          <Link key={idx} to={link.path} className="nav-link">
+            {link.label}
+          </Link>
+        )
+      )}
+
+      {isLoggedIn && (
+        <div className="user-menu">
+          <button onClick={() => setShowOrders(prev => !prev)}>
+            <FaUserCircle size={28} className="text-blue-600" />
+          </button>
+
+          {showOrders && (
+            <div className="user-dropdown">
+              <p className="font-semibold mb-2">Hello, {user?.name || "User"}!</p>
+
+              {userType === 'buyer' && (
+                <button
+                  className="w-full text-left text-blue-600 hover:underline mb-2"
+                  onClick={() => { navigate("/buyer/orders"); setShowOrders(false); }}
+                >
+                  My Orders
+                </button>
+              )}
+
+              <button
+                className="block w-full text-left text-blue-600 hover:underline mb-2"
+                onClick={() => { navigate("/notifications"); setShowOrders(false); }}
+              >
+                Notifications
+              </button>
+
+              <PushNotificationToggle userType={userType} isLoggedIn={isLoggedIn} hasChecked={hasChecked} />
+
+              <button
+                className="w-full text-left text-red-600 hover:underline"
+                onClick={() => { logout(); setShowOrders(false); }}
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
+      )}
+    </nav>
+  </div>
 
-        {/* Hamburger Icon - Mobile */}
-        <button
-          onClick={toggleMenu}
-          className="lg:hidden text-2xl focus:outline-none"
-        >
-          {!isOpen ? '☰' : <FaTimes /> }
-        </button>
+  {/* Mobile Nav */}
+  {isOpen && (
+    <div className="mobile-nav">
+      {navLinks.map((link, idx) => 
+        link.show && (
+          <Link key={idx} to={link.path} onClick={closeMenu} className="nav-link block">
+            {link.label}
+          </Link>
+        )
+      )}
 
-        {/* Desktop Nav */}
-        <nav className="hidden lg:flex items-center space-x-6 text-gray-700 text-sm font-medium">
-  {navLinks.map(
-    (link, idx) =>
-      link.show && (
-        <Link
-          key={idx}
-          to={link.path}
-          className="hover:text-blue-600 text-lg"
-        >
-          {link.label}
-        </Link>
-      )
-  )}
+      {isLoggedIn && (
+        <div className="border-t pt-4 mt-4">
+          <p className="font-semibold mb-2">Hello, {user?.name || "User"}!</p>
 
-  {isLoggedIn && (
-    <div className="relative">
-      <button
-        className="text-4xl text-blue-600"
-        onClick={() => setShowOrders((prev) => !prev)}
-        aria-label="User Profile"
-      >
-        <FaUserCircle />
-      </button>
-
-      {showOrders && (
-        <div className="absolute right-0 mt-2 w-56 p-4 bg-white border rounded shadow-lg z-50">
-          <p className="font-semibold mb-2">
-            Hello, {user?.name || "User"}!
-          </p>
-        {localStorage.getItem('userType') == 'buyer' &&  <button
-            className="w-full text-left text-blue-600 hover:underline mb-2"
-            onClick={() => {
-              navigate("/buyer/orders");
-              setShowOrders(false);
-            }}
-          >
-            My Orders
-          </button>}
-
-          {location.pathname != 'notifications' && <button
-          className="block w-full text-left text-blue-600 hover:underline mb-2"
-          onClick={() => {
-                             navigate("/notifications")
-
-            closeMenu();
-          }}
-        >
-          Notifications
-        </button>}
-         <PushNotificationToggle
-  userType={userType}
-  isLoggedIn={isLoggedIn}
-  hasChecked={hasChecked}
-  style={{ display: showOrders ? 'block' : 'none' }} // or conditionally render content inside
-/>
+          {userType === 'buyer' && (
+            <button
+              className="block w-full text-left text-blue-600 hover:underline mb-2"
+              onClick={() => { navigate("/buyer/orders"); closeMenu(); }}
+            >
+              My Orders
+            </button>
+          )}
 
           <button
-            className="w-full text-left text-red-600 hover:underline"
-            onClick={() => {
-              logout();
-              setShowOrders(false);
-            }}
+            className="block w-full text-left text-blue-600 hover:underline mb-2"
+            onClick={() => { navigate("/notifications"); closeMenu(); }}
+          >
+            Notifications
+          </button>
+
+          <PushNotificationToggle userType={userType} isLoggedIn={isLoggedIn} hasChecked={hasChecked} />
+
+          <button
+            className="block w-full text-left text-red-600 hover:underline"
+            onClick={() => { logout(); closeMenu(); }}
           >
             Logout
           </button>
@@ -225,77 +243,8 @@ const hasChecked = useRef(false);
       )}
     </div>
   )}
-</nav>
+</header>
 
-      </div>
-
-      {/* Mobile Nav */}
-      {isOpen && (
-  <div className="lg:hidden px-4 pb-4 space-y-3 text-gray-700 text-base font-medium">
-    {navLinks.map(
-      (link, idx) =>
-        link.show && (
-          <Link
-            key={idx}
-            to={link.path}
-            onClick={closeMenu}
-            className="block hover:text-blue-600"
-          >
-            {link.label}
-          </Link>
-        )
-    )}
-
-    {/* User Info and Orders - Mobile */}
-    {isLoggedIn && (
-      <div className="border-t pt-4 mt-4">
-        <p className="font-semibold mb-2">
-          Hello, {user?.name || "User"}!
-        </p>
-       {localStorage.getItem('userType') == 'buyer' && <button
-          className="block w-full text-left text-blue-600 hover:underline mb-2"
-          onClick={() => {
-            navigate("/buyer/orders");
-            closeMenu();
-          }}
-        >
-          My Orders
-        </button>}
-
-
-
-        {(location.pathname != 'notifications/buyer' || location.pathname != 'notifications/vendor') && <button
-          className="block w-full text-left text-blue-600 hover:underline mb-2"
-          onClick={() => {
-                    navigate("/notifications")
-
-            closeMenu();
-          }}
-        >
-          Notifications
-        </button>}
-       <PushNotificationToggle
-  userType={userType}
-  hasChecked={hasChecked}
-  isLoggedIn={isLoggedIn}
-  style={{ display:  showOrders ? 'block' : 'none' }} // or conditionally render content inside
-/>
-
-        <button
-          className="block w-full text-left text-red-600 hover:underline"
-          onClick={() => {
-            logout();
-            closeMenu();
-          }}
-        >
-          Logout
-        </button>
-      </div>
-    )}
-  </div>
-)}
-
-    </header>
   )
 }
 

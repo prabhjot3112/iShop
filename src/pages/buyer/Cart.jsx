@@ -93,6 +93,7 @@ const Cart = () => {
       <div>
         {/* Cart Items List */}
         <div className="mt-5 max-w-4xl mx-auto grid grid-cols-1 gap-4">
+          <h1 className='font-bold text-2xl my-5 underline '>Your Cart</h1>
           {cartItems.map((cartItem) => {
             const { product, quantity } = cartItem;
 
